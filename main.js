@@ -1,18 +1,28 @@
 function main(){
 	requestAnimationFrame(main);
-	debugOut.innerHTML="Cursor: ("+cursor.x+", "+cursor.y+") \nDown: " + cursor.down;
 	if(cursor.down){
 		grid.draw(cursor.x, cursor.y);
 	}
 }
 
+function extendBody(x, y){
+	extendX = x + window.innerWidth;
+	extendY = y + window.innerHeight;
+	if (extendX > bodyWidth + 255){
+		document.body.style.width = extendX + "px";
+		bodyWidth = extendX;
+	}
+	if (extendY > bodyHeight + 255){
+		document.body.style.height = extendY + "px";
+		bodyHeight = extendY;
+	}
+}
+
 function init(){
 	console.log("init");
-	inputInit();
+	window.cursor = new cursor();
 	window.grid = new grid();
-	window.debugOut=document.getElementById("debug");
 	main();
 }
 
-console.log("start");
 document.addEventListener("DOMContentLoaded", function(event) {init()});
