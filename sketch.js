@@ -6,6 +6,8 @@ var grid = function(){
 	document.body.style.width = bodyWidth + "px";
 	document.body.style.height = bodyHeight + "px";
 	this.strokeId = 0;
+	this.prevX;
+	this.prevY;
 };
 grid.ID=0;
 var bodyWidth = window.innerWidth;
@@ -37,17 +39,28 @@ grid.prototype.getCtx = function(x, y){
 }
 
 grid.prototype.draw = function(x, y){
-	ctx = this.getCtx(x, y);
-	if (ctx.lastStroke + 1 != this.strokeId){
-		this.move(x, y);
+	//Calculate the tile locations for previous and current cursor locations
+	//Currently only works going downwards, to the right
+	prevTileX=Math.trunc(this.prevX/255);
+	prevTileY=Math.trunc(this.prevY/255);
+	currTileX=Math.trunc(x/255);
+	currTileY=Math.trunc(y/255);
+	//Loop within rectangle of tiles. Top right corner at previous cursor location,
+	//bottom left corner at current cursor location
+	//On each tile, calculate relative position of the line to draw.
+	//If crossing into a new tile, the line's endpionts will be outside the tile
+	//Just moveTo() and lineTo() anyway; canvas seems to handle it.
+	for(var i = prevTileX;i <= currTileX;i ++){
+		for (var j = prevTileY;j <= currTileY;j ++){
+			ctx = this.getCtx(i*255, j*255);
+			console.log(this.prevX - i * 255, this.prevY - j * 255)
+			ctx.moveTo(this.prevX - i * 255, this.prevY - j * 255);
+			ctx.lineTo(x - i * 255, y - j * 255);
+			ctx.stroke();
+		}
 	}
-	ctx.lastStroke = this.strokeId;
-	x %= 255;
-	y %= 255;
-	ctx.lineTo(x, y);
-	console.log("line to " + x + ", " + y);
-	ctx.stroke();
-	this.strokeId ++;
+	this.prevX = x;
+	this.prevY = y;
 }
 
 grid.prototype.move = function(x, y){
@@ -55,5 +68,4 @@ grid.prototype.move = function(x, y){
 	x %= 255;
 	y %= 255;
 	ctx.moveTo(x, y);
-	console.log("moved to " + x + ", " + y);
 }
