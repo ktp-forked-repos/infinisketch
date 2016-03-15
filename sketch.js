@@ -1,11 +1,9 @@
 var grid = function(){
 	this.id=grid.ID;
-	console.log("Created grid " + this.id);
 	grid.ID ++;
 
 	document.body.style.width = bodyWidth + "px";
 	document.body.style.height = bodyHeight + "px";
-	this.strokeId = 0;
 	this.prevX;
 	this.prevY;
 };
@@ -14,7 +12,6 @@ var bodyWidth = window.innerWidth;
 var bodyHeight = window.innerHeight;
 
 grid.prototype.createCanvas = function(x, y){
-	console.log("Creating canvas for grid " + this.id + " at ("+x+", "+y+")");
 	canvas = document.createElement("canvas");
 	canvas.style.position = "absolute";
 	canvas.style.left = x* 255 + "px";
@@ -25,7 +22,6 @@ grid.prototype.createCanvas = function(x, y){
 	document.body.appendChild(canvas);
 	ctx = canvas.getContext("2d");
 	ctx.fillStyle = "rgba(0,0,0,1)";
-	ctx.lastStroke = this.strokeId;
 	grid[x + "," + y] = ctx;
 }
 
@@ -41,19 +37,15 @@ grid.prototype.getCtx = function(x, y){
 grid.prototype.draw = function(x, y){
 	//Calculate the tile locations for previous and current cursor locations
 	//Currently only works going downwards, to the right
-	prevTileX=Math.trunc(this.prevX/255);
-	prevTileY=Math.trunc(this.prevY/255);
-	currTileX=Math.trunc(x/255);
-	currTileY=Math.trunc(y/255);
-	//Loop within rectangle of tiles. Top right corner at previous cursor location,
-	//bottom left corner at current cursor location
-	//On each tile, calculate relative position of the line to draw.
-	//If crossing into a new tile, the line's endpionts will be outside the tile
-	//Just moveTo() and lineTo() anyway; canvas seems to handle it.
-	for(var i = prevTileX;i <= currTileX;i ++){
-		for (var j = prevTileY;j <= currTileY;j ++){
+	pX=Math.trunc(this.prevX/255);
+	pY=Math.trunc(this.prevY/255);
+	cX=Math.trunc(x/255);
+	cY=Math.trunc(y/255);
+	//Loop through all tiles in rectangle. 
+	for(var i = Math.min(pX,cX);i <= Math.max(pX,cX);i ++){
+		for (var j = Math.min(pY,cY);j <= Math.max(pY,cY);j ++){
 			ctx = this.getCtx(i*255, j*255);
-			console.log(this.prevX - i * 255, this.prevY - j * 255)
+			//compute coordinates relative to top left of tile
 			ctx.moveTo(this.prevX - i * 255, this.prevY - j * 255);
 			ctx.lineTo(x - i * 255, y - j * 255);
 			ctx.stroke();
@@ -65,6 +57,8 @@ grid.prototype.draw = function(x, y){
 
 grid.prototype.move = function(x, y){
 	ctx = this.getCtx(x, y);
+	this.prevX = x;
+	this.prevY = y;
 	x %= 255;
 	y %= 255;
 	ctx.moveTo(x, y);
