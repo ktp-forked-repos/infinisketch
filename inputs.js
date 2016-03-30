@@ -12,7 +12,8 @@ var cursor = function(){
 cursor.prototype.clicked = function(e){
 	this.down=!this.down;
 	this.move(e);
-	grid.move(this.x, this.y);
+	grid.move(this.x+grid.brush.lineWidth, this.y);
+	grid.draw(this.x,this.y);
 }
 cursor.prototype.tapped = function(e){
 	if (e.changedTouches.length <= 1){

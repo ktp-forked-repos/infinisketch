@@ -22,6 +22,7 @@ function init(){
 	console.log("init");
 	window.cursor = new cursor();
 	window.grid = new grid();
+	grid.changeBrush(brushes.pencil);
 	main();
 }
 
