@@ -35,8 +35,11 @@ grid.prototype.getCtx = function(x, y){
 		this.createCanvas(canvasX, canvasY);
 	}
 	ctx = grid[canvasX + "," + canvasY];
+	ctx.beginPath();
 	ctx.lineWidth = this.brush.lineWidth;
 	ctx.strokeStyle = this.brush.color;
+	ctx.shadowBlur = this.brush.blur;
+	ctx.shadowColor = this.brush.color;
 	return ctx;
 }
 
@@ -55,6 +58,8 @@ grid.prototype.draw = function(x, y){
 				//compute coordinates relative to top left of tile
 				ctx.moveTo(this.prevX - i * 255, this.prevY - j * 255);
 			}
+			ctx.beginPath();
+				ctx.moveTo(this.prevX - i * 255, this.prevY - j * 255);
 			ctx.lineTo(x - i * 255, y - j * 255);
 			ctx.stroke();
 		}

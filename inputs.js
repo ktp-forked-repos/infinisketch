@@ -10,6 +10,7 @@ var cursor = function(){
 
 //Mouse inputs
 cursor.prototype.clicked = function(e){
+	if (e.toElement.tagName == "INPUT"){return;}
 	this.down=!this.down;
 	this.move(e);
 	grid.move(this.x+grid.brush.lineWidth, this.y);

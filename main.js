@@ -23,6 +23,13 @@ function init(){
 	window.cursor = new cursor();
 	window.grid = new grid();
 	grid.changeBrush(brushes.pencil);
+
+	var brushInputs = document.getElementsByName("brush");
+	for (var i=0;i < brushInputs.length;i ++){
+		brushInputs[i].addEventListener("change", function(){
+			grid.changeBrush(brushes[this.value]);
+		});
+	}
 	main();
 }
 

@@ -28,11 +28,41 @@ canvas{
 	cursor:crosshair;
 	border:1px solid #CCCCCC;
 }
+
+.controls{
+	background-color:rgba(192,192,192,0.5);
+	width:5em;
+	position:absolute;
+	z-index:10;
+}
+.selection{
+	display:block;
+	width:100%;
+	float:left;
+}
+.selection:hover{
+	background-color:rgba(192,192,192,0.5);
+}
+
+.unselectable{
+	-moz-user-select: none;
+	-webkit-user-select: none;
+	-ms-user-select: none;
+}
 </style>
 
 </head>
 
 <body>
+
+<div class="controls unselectable">
+	<section>
+		<p>Brush</p>
+		<span class="selection" ><input type="radio" name="brush" value="pencil" checked /> Pencil</span>
+		<span class="selection" ><input type="radio" name="brush" value="marker" /> Marker</span>
+		<span class="selection" ><input type="radio" name="brush" value="eraser" /> Eraser</span>
+	</section>
+</div>
 
 <script src="brushes.js" ></script>
 <script src="main.js" ></script>
