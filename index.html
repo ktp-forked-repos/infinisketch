@@ -62,6 +62,13 @@ canvas{
 		<span class="selection" ><input type="radio" name="brush" value="marker" /> Marker</span>
 		<span class="selection" ><input type="radio" name="brush" value="eraser" /> Eraser</span>
 	</section>
+	<section>
+		<p>Color</p>
+		<span>R <input type="range" name="color" min=0 max=255 value=0 /></span>
+		<span>G <input type="range" name="color" min=0 max=255 value=0 /></span>
+		<span>B <input type="range" name="color" min=0 max=255 value=0 /></span>
+		<div id="colorPreview" style="background-color:#000000;width:1em;height:1em;" </div>
+	</section>
 </div>
 
 <script src="brushes.js" ></script>

@@ -37,10 +37,11 @@ grid.prototype.getCtx = function(x, y){
 	ctx = grid[canvasX + "," + canvasY];
 	ctx.beginPath();
 	ctx.lineWidth = this.brush.lineWidth;
-	ctx.strokeStyle = this.brush.color;
+	ctx.strokeStyle = ctx.shadowColor = "rgb(" + this.brush.color[0] + "," + this.brush.color[1] + "," + this.brush.color[2] + ")";
 	ctx.shadowBlur = this.brush.blur;
-	ctx.shadowColor = this.brush.color;
+	//ctx.shadowColor = this.brush.color;
 	return ctx;
+	console.log(this.brush.color);
 }
 
 grid.prototype.draw = function(x, y){
@@ -76,5 +77,11 @@ grid.prototype.move = function(x, y){
 
 grid.prototype.changeBrush = function(newBrush){
 	this.brush = newBrush;
+	window.ctx = {x:-1, y:-1};
+}
+
+grid.prototype.changeColor = function(color){
+	console.log("color change");
+	this.brush.color = color;
 	window.ctx = {x:-1, y:-1};
 }

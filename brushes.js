@@ -1,17 +1,17 @@
 var brushes = {
 "pencil":{
 	"lineWidth":1,
-	"color":"#000000",
+	"color":[0,0,0],
 	"blur":0
 },
 "marker":{
 	"lineWidth":5,
-	"color":"#000000",
+	"color":[0,0,0],
 	"blur":0
 },
 "eraser":{
 	"lineWidth":5,
-	"color":"#FFFFFF",
+	"color":[255,255,255],
 	"blur":10
 }
 
