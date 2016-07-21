@@ -1,7 +1,7 @@
 function main(){
 	requestAnimationFrame(main);
-	if(cursor.down){
-		grid.draw(cursor.x, cursor.y);
+	if(brush.down){
+		grid.draw(brush.x, brush.y);
 	}
 }
 
@@ -20,7 +20,7 @@ function extendBody(x, y){
 
 function init(){
 	console.log("init");
-	window.cursor = new cursor();
+	window.brush = new cursor();
 	window.grid = new grid();
 	main();
 }
