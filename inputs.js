@@ -1,11 +1,30 @@
 var cursor = function(){
 	this.down = false;
-	document.body.addEventListener("mousedown", function(e){cursor.clicked(e)});
-	document.addEventListener("mouseup", function(e){cursor.clicked(e)});
-	document.addEventListener("touchstart", function(e){cursor.tapped(e)});
-	document.addEventListener("touchend", function(e){cursor.tapped(e)});
-	document.addEventListener("mousemove", function(e){cursor.mouse(e)});
-	document.addEventListener("touchmove", function(e){cursor.touch(e)});
+	document.body.addEventListener("mousedown", function(obj){
+		return function(e){
+			obj.clicked(e);
+		}
+	}(this));
+	document.body.addEventListener("mousemove", function(obj){
+		return function(e){
+			obj.mouse(e);
+		}
+	}(this));
+	document.body.addEventListener("touchstart", function(obj){
+		return function(e){
+			obj.tapped(e);
+		}
+	}(this));
+	document.body.addEventListener("touchend", function(obj){
+		return function(e){
+			obj.tapped(e);
+		}
+	}(this));
+	document.body.addEventListener("touchmove", function(obj){
+		return function(e){
+			obj.touch(e);
+		}
+	}(this));
 }
 
 //Mouse inputs
