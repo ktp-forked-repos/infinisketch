@@ -32,10 +32,10 @@ grid.prototype.createCanvas = function(x, y){
 	this.ctx=ctx;
 }
 
-grid.prototype.getCtx = function(x, y){
+grid.prototype.getCtx = function(x, y, noCreate){
 	var canvasX=Math.trunc(x/255);
 	var canvasY=Math.trunc(y/255);
-	if(grid[canvasX + "," + canvasY] == null){
+	if(grid[canvasX + "," + canvasY] == null && !noCreate){
 		this.createCanvas(canvasX, canvasY);
 	}
 	this.ctx = grid[canvasX + "," + canvasY];
