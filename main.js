@@ -3,7 +3,7 @@
 function main(){
 	requestAnimationFrame(main);
 	if(brush.down){
-		grid.draw(brush.x, brush.y);
+		canvas.draw(brush.x, brush.y);
 	}
 	if (window.innerHeight > window.innerWidth){
 		var scrollmap = [2, 0];
@@ -42,13 +42,13 @@ function extendBody(x, y){
 function init(){
 	console.log("init");
 	var handlers = {
-		mousedown:function(){grid.move(brush.x, brush.y);},
-		touchstart:function(){grid.move(brush.x, brush.y);},
+		mousedown:function(){canvas.move(brush.x, brush.y);},
+		touchstart:function(){canvas.move(brush.x, brush.y);},
 		mouseup:function(){extendBody(brush.x, brush.y);},
 		touchend:function(){extendBody(brush.x, brush.y);}
 	}
 	window.brush = new cursor(handlers);
-	window.grid = new grid();
+	window.canvas = new grid();
 	window.loc = new tracker();
 	main();
 }
