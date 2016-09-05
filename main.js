@@ -1,3 +1,5 @@
+"use strict"
+
 function main(){
 	requestAnimationFrame(main);
 	if(brush.down){
@@ -25,8 +27,8 @@ function main(){
 }
 
 function extendBody(x, y){
-	extendX = x + window.innerWidth;
-	extendY = y + window.innerHeight;
+	var extendX = x + window.innerWidth;
+	var extendY = y + window.innerHeight;
 	if (extendX > bodyWidth + 255){
 		document.body.style.width = extendX + "px";
 		bodyWidth = extendX;

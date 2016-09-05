@@ -1,4 +1,5 @@
 //Sketch- Accel, array helpers
+"use strict";
 
 var inputs = function(objHandlers, customHandlers){
 	console.log("inputs");
