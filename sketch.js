@@ -70,3 +70,24 @@ grid.prototype.move = function(x, y){
 	y %= 255;
 	this.ctx.moveTo(x, y);
 }
+
+grid.prototype.export = function(){
+	if (this.maxX < 0 || this.maxY < 0){return;}
+	var finalCvs = document.createElement("canvas");
+	finalCvs.width = (this.maxX+1) * 255;
+	finalCvs.height = (this.maxY+1) * 255;
+	var final = finalCvs.getContext("2d");
+	for (var i = 0;i <= this.maxX;i ++){
+		for (var j = 0;j <= this.maxY;j ++){
+			console.log("Copying canvas " + i + ", " + j);
+			this.getCtx(i*255,j*255,true);
+			if (!this.ctx){continue;}
+			final.drawImage(this.ctx.canvas, i*255, j*255);
+		}
+	}
+	console.log(finalCvs);
+	var img = document.createElement("img");
+	img.src = finalCvs.toDataURL();
+	img.addEventListener("click", function(){this.parentElement.removeChild(this);});
+	document.body.appendChild(img);
+}

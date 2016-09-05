@@ -33,6 +33,12 @@ canvas{
 	cursor:crosshair;
 	border:1px solid #CCCCCC;
 }
+
+img{
+	position:absolute;
+	top:0;left;0;
+	z-index:10;
+}
 </style>
 
 </head>
@@ -42,6 +48,8 @@ canvas{
 <script src="main.js" ></script>
 <script src="inputs.js" ></script>
 <script src="sketch.js" ></script>
+
+<input type="button" value="export" onclick = "canvas.export();" style="position:absolute;top:0;left:0;z-index:2" />
 
 </body>
 
