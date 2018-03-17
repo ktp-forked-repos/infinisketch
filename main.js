@@ -1,29 +1,16 @@
 "use strict"
 
+var brush = {
+	"x":0,
+	"y":0,
+	"down":false
+}
+
 function main(){
 	requestAnimationFrame(main);
 	if(brush.down){
 		canvas.draw(brush.x, brush.y);
 	}
-	if (window.innerHeight > window.innerWidth){
-		var scrollmap = [2, 0];
-		var reversex=1;
-	}
-	else{
-		var scrollmap = [0,2];
-		var reversex=-1;
-	}
-	var scrollSpeed = [0,0];
-	for (var i = 0;i < scrollmap.length;i ++){
-		var tilt = loc.tilt[scrollmap[i]];
-		if (tilt > 10){
-			scrollSpeed[i] = tilt - 10;
-		}
-		if (tilt < -10){
-			scrollSpeed[i] = tilt + 10;
-		}
-	}
-	window.scrollBy(reversex*scrollSpeed[0], scrollSpeed[1]);
 }
 
 function extendBody(x, y){
@@ -41,15 +28,18 @@ function extendBody(x, y){
 
 function init(){
 	console.log("init");
-	var handlers = {
-		mousedown:function(){canvas.move(brush.x, brush.y);},
-		touchstart:function(){canvas.move(brush.x, brush.y);},
-		mouseup:function(){extendBody(brush.x, brush.y);},
-		touchend:function(){extendBody(brush.x, brush.y);}
-	}
-	window.brush = new cursor(handlers);
+	document.body.addEventListener("mousedown", function(){
+		brush.down=true;
+	});
+	document.body.addEventListener("mouseup", function(e){
+		brush.down=false;
+		extendBody(e.clientX, e.clientY);
+	});
+	document.body.addEventListener("mousemove", function(e){
+		brush.x=e.clientX;
+		brush.y=e.clientY;
+	});
 	window.canvas = new grid();
-	window.loc = new tracker();
 	main();
 }
 
