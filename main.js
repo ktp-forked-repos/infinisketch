@@ -29,6 +29,12 @@ function init(){
 		if (brush.y > canvas.height-100){
 			canvas.extendBody(0,255);
 		}
+		if (brush.x < 100){
+			canvas.extendBody(-255,0);
+		}
+		if (brush.y < 100){
+			canvas.extendBody(0,-255);
+		}
 	});
 	document.body.addEventListener("mousemove", function(e){
 		brush.x=e.clientX + brush.dx;

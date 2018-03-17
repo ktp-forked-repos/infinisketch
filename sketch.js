@@ -19,7 +19,10 @@ grid.prototype.extendBody = function(x, y){
 	this.width += Math.abs(x);
 	this.height += Math.abs(y);
 	this.createCanvas();
-	this.ctx.drawImage(oldCvs, 0, 0);
+	var offsetX = (0<x)?0:-x;
+	var offsetY = (0<y)?0:-y;
+	this.ctx.drawImage(oldCvs, offsetX, offsetY);
+	window.scrollBy(offsetX, offsetY);
 	document.body.removeChild(oldCvs);
 }
 
