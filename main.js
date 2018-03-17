@@ -13,19 +13,6 @@ function main(){
 	}
 }
 
-function extendBody(x, y){
-	var extendX = x + window.innerWidth;
-	var extendY = y + window.innerHeight;
-	if (extendX > bodyWidth + 255){
-		document.body.style.width = extendX + "px";
-		bodyWidth = extendX;
-	}
-	if (extendY > bodyHeight + 255){
-		document.body.style.height = extendY + "px";
-		bodyHeight = extendY;
-	}
-}
-
 function init(){
 	console.log("init");
 	document.body.addEventListener("mousedown", function(){
@@ -33,7 +20,7 @@ function init(){
 	});
 	document.body.addEventListener("mouseup", function(e){
 		brush.down=false;
-		extendBody(e.clientX, e.clientY);
+		canvas.extendBody(e.clientX, e.clientY);
 	});
 	document.body.addEventListener("mousemove", function(e){
 		brush.x=e.clientX;

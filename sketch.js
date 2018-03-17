@@ -15,6 +15,19 @@ grid.ID=0;
 var bodyWidth = window.innerWidth;
 var bodyHeight = window.innerHeight;
 
+grid.prototype.extendBody = function(x, y){
+	var extendX = x + window.innerWidth;
+	var extendY = y + window.innerHeight;
+	if (extendX > bodyWidth + 255){
+		document.body.style.width = extendX + "px";
+		bodyWidth = extendX;
+	}
+	if (extendY > bodyHeight + 255){
+		document.body.style.height = extendY + "px";
+		bodyHeight = extendY;
+	}
+}
+
 grid.prototype.createCanvas = function(x, y){
 	if (x > this.maxX){this.maxX = x;}
 	if (y > this.maxY){this.maxY = y;}
