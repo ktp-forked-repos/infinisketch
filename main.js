@@ -3,8 +3,6 @@
 var brush = {
 	"x":0,
 	"y":0,
-	"dx":0,
-	"dy":0,
 	"down":false
 }
 
@@ -15,34 +13,42 @@ function main(){
 	}
 }
 
+function down(e){
+	e.preventDefault();
+	brush.down=true;
+	canvas.move(brush.x, brush.y)
+}
+function tdown(e){
+	e.preventDefault();
+	brush.down=true;
+	canvas.move(e.touches[0].pageX, e.touches[0].pageY);
+}
+function up(e){
+	e.preventDefault();
+	brush.down=false;
+	if (brush.x > canvas.width-100){
+		canvas.extendBody(255,0);
+	}
+	if (brush.y > canvas.height-100){
+		canvas.extendBody(0,255);
+	}
+	if (brush.x < 100){
+		canvas.extendBody(-255,0);
+	}
+	if (brush.y < 100){
+		canvas.extendBody(0,-255);
+	}
+}
+
 function init(){
 	console.log("init");
-	document.body.addEventListener("mousedown", function(){
-		brush.down=true;
-		canvas.move(brush.x, brush.y)
-	});
-	document.body.addEventListener("mouseup", function(e){
-		brush.down=false;
-		if (brush.x > canvas.width-100){
-			canvas.extendBody(255,0);
-		}
-		if (brush.y > canvas.height-100){
-			canvas.extendBody(0,255);
-		}
-		if (brush.x < 100){
-			canvas.extendBody(-255,0);
-		}
-		if (brush.y < 100){
-			canvas.extendBody(0,-255);
-		}
-	});
 	document.body.addEventListener("mousemove", function(e){
-		brush.x=e.clientX + brush.dx;
-		brush.y=e.clientY + brush.dy;
+		brush.x=e.pageX;
+		brush.y=e.pageY;
 	});
-	window.addEventListener("scroll", function(){
-		brush.dx=document.documentElement.scrollLeft;
-		brush.dy=document.documentElement.scrollTop;
+	document.body.addEventListener("touchmove", function(e){
+		brush.x=e.touches[0].pageX;
+		brush.y=e.touches[0].pageY;
 	});
 	window.canvas = new grid();
 	main();

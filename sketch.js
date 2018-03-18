@@ -30,9 +30,6 @@ grid.prototype.createCanvas = function(){
 	var x = this.width;
 	var y = this.height;
 	var canvas = document.createElement("canvas");
-	canvas.style.position = "absolute";
-	canvas.style.left = 0 + "px";
-	canvas.style.top = 0 + "px";
 	canvas.id = this.id + "ctx";
 	canvas.width = x;
 	canvas.height = y;
@@ -41,6 +38,10 @@ grid.prototype.createCanvas = function(){
 	document.body.appendChild(canvas);
 	var ctx = canvas.getContext("2d");
 	ctx.fillStyle = "rgba(0,0,0,1)";
+	canvas.addEventListener("mousedown", down);
+	canvas.addEventListener("mouseup", up);
+	canvas.addEventListener("touchstart", tdown);
+	canvas.addEventListener("touchend", up);
 	this.ctx=ctx;
 	this.cvs=canvas;
 }
