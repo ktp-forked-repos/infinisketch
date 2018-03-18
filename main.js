@@ -5,6 +5,10 @@ var brush = {
 	"y":0,
 	"down":false
 }
+var control = {
+	"x":0,
+	"y":0
+}
 
 function main(){
 	requestAnimationFrame(main);
@@ -19,9 +23,13 @@ function down(e){
 	canvas.move(brush.x, brush.y)
 }
 function tdown(e){
-	e.preventDefault();
+	if (e.touches.length == 1){
+		e.preventDefault();
+	}
 	brush.down=true;
 	canvas.move(e.touches[0].pageX, e.touches[0].pageY);
+	brush.x = e.touches[0].pageX;
+	brush.y = e.touches[0].pageY;
 }
 function up(e){
 	e.preventDefault();
@@ -39,20 +47,23 @@ function up(e){
 		canvas.extendBody(0,-255);
 	}
 }
+function move(e){
+	brush.x=e.pageX;
+	brush.y=e.pageY;
+}
+function tmove(e){
+	if (e.touches.length == 1){
+		e.preventDefault();
+	}
+	brush.x=e.touches[0].pageX;
+	brush.y=e.touches[0].pageY;
+}
 
 function init(){
 	console.log("init");
-	document.body.addEventListener("mousemove", function(e){
-		brush.x=e.pageX;
-		brush.y=e.pageY;
-	});
-	document.body.addEventListener("touchmove", function(e){
-		brush.x=e.touches[0].pageX;
-		brush.y=e.touches[0].pageY;
-	});
 	window.canvas = new grid();
 	main();
 }
 
 document.addEventListener("DOMContentLoaded", function(event) {init()});
-//window.onerror = function(e){alert(e);}
+window.onerror = function(e){alert(e);}

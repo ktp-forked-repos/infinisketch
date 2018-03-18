@@ -42,6 +42,8 @@ grid.prototype.createCanvas = function(){
 	canvas.addEventListener("mouseup", up);
 	canvas.addEventListener("touchstart", tdown);
 	canvas.addEventListener("touchend", up);
+	canvas.addEventListener("mousemove", move);
+	canvas.addEventListener("touchmove", tmove);
 	this.ctx=ctx;
 	this.cvs=canvas;
 }
