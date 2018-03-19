@@ -25,6 +25,8 @@ function down(e){
 function tdown(e){
 	if (e.touches.length == 1){
 		e.preventDefault();
+	} else {
+		console.log(e.touches);
 	}
 	brush.down=true;
 	canvas.move(e.touches[0].pageX, e.touches[0].pageY);
@@ -32,7 +34,6 @@ function tdown(e){
 	brush.y = e.touches[0].pageY;
 }
 function up(e){
-	e.preventDefault();
 	brush.down=false;
 	if (brush.x > canvas.width/canvas.scale-100){
 		canvas.extendBody(255,0);
@@ -52,9 +53,6 @@ function move(e){
 	brush.y=e.pageY;
 }
 function tmove(e){
-	if (e.touches.length == 1){
-		e.preventDefault();
-	}
 	brush.x=e.touches[0].pageX;
 	brush.y=e.touches[0].pageY;
 }

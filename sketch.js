@@ -23,7 +23,7 @@ grid.prototype.extendBody = function(x, y){
 	var offsetX = (0<x)?0:-x;
 	var offsetY = (0<y)?0:-y;
 	this.ctx.drawImage(oldCvs, offsetX, offsetY);
-	window.scrollBy(offsetX, offsetY);
+	window.scrollBy(offsetX/this.scale, offsetY/this.scale);
 	document.body.removeChild(oldCvs);
 }
 
