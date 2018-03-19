@@ -4,10 +4,11 @@ var grid = function(){
 	this.id=grid.ID;
 	grid.ID ++;
 
+	this.scale=window.devicePixelRatio;
 	this.prevX;
 	this.prevY;
-	this.width=window.innerWidth;
-	this.height=window.innerHeight;
+	this.width=this.scale*window.innerWidth;
+	this.height=this.scale*window.innerHeight;
 	this.cvs;
 	this.ctx;
 	this.createCanvas();
@@ -16,8 +17,8 @@ grid.ID=0;
 
 grid.prototype.extendBody = function(x, y){
 	var oldCvs = this.cvs;
-	this.width += Math.abs(x);
-	this.height += Math.abs(y);
+	this.width += this.scale * Math.abs(x);
+	this.height += this.scale * Math.abs(y);
 	this.createCanvas();
 	var offsetX = (0<x)?0:-x;
 	var offsetY = (0<y)?0:-y;
@@ -33,8 +34,8 @@ grid.prototype.createCanvas = function(){
 	canvas.id = this.id + "ctx";
 	canvas.width = x;
 	canvas.height = y;
-	canvas.style.width = x;
-	canvas.style.height = y;
+	canvas.style.width = (x/this.scale)+"px";
+	canvas.style.height = (y/this.scale) + "px";
 	document.body.appendChild(canvas);
 	var ctx = canvas.getContext("2d");
 	ctx.fillStyle = "rgba(0,0,0,1)";
@@ -49,6 +50,8 @@ grid.prototype.createCanvas = function(){
 }
 
 grid.prototype.draw = function(x, y){
+	x *= this.scale;
+	y *= this.scale;
 	this.ctx.moveTo(this.prevX, this.prevY);
 	this.ctx.lineTo(x, y);
 	this.ctx.stroke();
@@ -57,6 +60,8 @@ grid.prototype.draw = function(x, y){
 }
 
 grid.prototype.move = function(x, y){
+	x *= this.scale;
+	y *= this.scale;
 	this.prevX = x;
 	this.prevY = y;
 	this.ctx.moveTo(x, y);

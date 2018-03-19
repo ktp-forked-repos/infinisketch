@@ -34,10 +34,10 @@ function tdown(e){
 function up(e){
 	e.preventDefault();
 	brush.down=false;
-	if (brush.x > canvas.width-100){
+	if (brush.x > canvas.width/canvas.scale-100){
 		canvas.extendBody(255,0);
 	}
-	if (brush.y > canvas.height-100){
+	if (brush.y > canvas.height/canvas.scale-100){
 		canvas.extendBody(0,255);
 	}
 	if (brush.x < 100){
