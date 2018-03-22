@@ -36,15 +36,13 @@ grid.prototype.createCanvas = function(){
 	canvas.height = y;
 	canvas.style.width = (x/this.scale)+"px";
 	canvas.style.height = (y/this.scale) + "px";
+	canvas.style.touchAction="none";
 	document.body.appendChild(canvas);
 	var ctx = canvas.getContext("2d");
 	ctx.fillStyle = "rgba(0,0,0,1)";
-	canvas.addEventListener("mousedown", down);
-	canvas.addEventListener("mouseup", up);
-	canvas.addEventListener("touchstart", tdown);
-	canvas.addEventListener("touchend", up);
-	canvas.addEventListener("mousemove", move);
-	canvas.addEventListener("touchmove", tmove);
+	canvas.addEventListener("pointerdown", down);
+	canvas.addEventListener("pointerup", up);
+	canvas.addEventListener("pointermove", move);
 	this.ctx=ctx;
 	this.cvs=canvas;
 }
@@ -52,7 +50,7 @@ grid.prototype.createCanvas = function(){
 grid.prototype.draw = function(x, y){
 	x *= this.scale;
 	y *= this.scale;
-	this.ctx.moveTo(this.prevX, this.prevY);
+	//this.ctx.moveTo(this.prevX, this.prevY);
 	this.ctx.lineTo(x, y);
 	this.ctx.stroke();
 	this.prevX = x;

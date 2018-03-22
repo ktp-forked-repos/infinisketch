@@ -18,20 +18,10 @@ function main(){
 }
 
 function down(e){
-	e.preventDefault();
 	brush.down=true;
+	brush.x=e.pageX;
+	brush.y=e.pageY;
 	canvas.move(brush.x, brush.y)
-}
-function tdown(e){
-	if (e.touches.length == 1){
-		e.preventDefault();
-	} else {
-		console.log(e.touches);
-	}
-	brush.down=true;
-	canvas.move(e.touches[0].pageX, e.touches[0].pageY);
-	brush.x = e.touches[0].pageX;
-	brush.y = e.touches[0].pageY;
 }
 function up(e){
 	brush.down=false;
@@ -51,10 +41,6 @@ function up(e){
 function move(e){
 	brush.x=e.pageX;
 	brush.y=e.pageY;
-}
-function tmove(e){
-	brush.x=e.touches[0].pageX;
-	brush.y=e.touches[0].pageY;
 }
 
 function init(){
