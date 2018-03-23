@@ -24,6 +24,7 @@ body{
 	padding:0;
 	position:relative;
 	background-color:#CCCCCC;
+	touch-action:none;
 }
 
 canvas{
@@ -34,11 +35,29 @@ canvas{
 	left:0px;
 	top:0px;
 }
+
+.controls{
+	position:fixed;
+	left:10px;
+	top:10px;
+	z-index:10;
+}
+#direction{
+	width:50px;
+	height:50px;
+	border-width:50px;
+	border-style:solid;
+	border-color:red green blue yellow;
+}
 </style>
 
 </head>
 
 <body>
+
+<div class="controls">
+	<div id="direction"></div>
+</div>
 
 <script src="main.js" ></script>
 <script src="sketch.js" ></script>
