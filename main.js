@@ -71,6 +71,8 @@ function up(e){
 	if (brush.y < 100){
 		canvas.extendBody(0,-255);
 	}
+	//document.body.style.width=canvas.width/canvas.scale + "px";
+	//document.body.style.height=canvas.height/canvas.scale + "px";
 }
 function move(e){
 	brush.x=e.pageX;
