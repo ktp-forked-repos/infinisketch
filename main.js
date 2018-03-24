@@ -3,8 +3,6 @@
 var brush = {
 	"x":0,
 	"y":0,
-	"offx":0,
-	"offy":0,
 	"down":false
 }
 var dir = {
@@ -21,7 +19,7 @@ var dir = {
 function main(){
 	requestAnimationFrame(main);
 	if(brush.down){
-		canvas.draw(brush.x+brush.offx, brush.y+brush.offy);
+		canvas.draw(brush.x, brush.y);
 	}
 	scroll();
 }
@@ -48,8 +46,6 @@ function scroll(){
 			dy = -50;
 		}
 	}
-	brush.offx += dx/canvas.scale;
-	brush.offy += dy/canvas.scale;
 	canvas.scroll(dx, dy);
 }
 function scrollCurve(n){
@@ -61,7 +57,7 @@ function down(e){
 	brush.down=true;
 	brush.x=e.pageX;
 	brush.y=e.pageY;
-	canvas.move(brush.x+brush.offx, brush.y+brush.offy)
+	canvas.move(brush.x, brush.y)
 }
 function up(e){
 	console.log("cvs up");

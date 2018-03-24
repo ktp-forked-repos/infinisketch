@@ -9,7 +9,8 @@ var grid = function(){
 	this.prevY;
 	this.width=this.scale*window.innerWidth;
 	this.height=this.scale*window.innerHeight;
-	this.center = [this.width/this.scale/2, this.height/this.scale/2];
+	this.center = [this.width/2, this.height/2];
+	this.view = [window.innerWidth/2 * this.scale, window.innerHeight/2*this.scale];
 	this.cvs;
 	this.ctx;
 	this.createCanvas();
@@ -23,18 +24,18 @@ grid.prototype.extendBody = function(x, y){
 	this.createCanvas();
 	var offsetX = (0<x)?0:-x;
 	var offsetY = (0<y)?0:-y;
-	this.ctx.drawImage(oldCvs, offsetX, offsetY);
-	this.scroll(offsetX/this.scale, offsetY/this.scale);
+	this.ctx.drawImage(oldCvs, offsetX*this.scale, offsetY*this.scale);
+	this.scroll(offsetX, offsetY);
 	document.body.removeChild(oldCvs);
 }
 grid.prototype.scroll = function(x, y){
-	this.center[0] += x;
-	this.center[1] += y;
+	this.center[0] += x * this.scale;
+	this.center[1] += y * this.scale;
 	this.reposition();
 }
 grid.prototype.reposition = function(){
-	this.cvs.style.left = (window.innerWidth/2 - this.center[0])/this.scale + "px";
-	this.cvs.style.top = (window.innerHeight/2 - this.center[1])/this.scale + "px";
+	this.cvs.style.left = (this.view[0] - this.center[0])/this.scale + "px";
+	this.cvs.style.top = (this.view[1] - this.center[1])/this.scale + "px";
 }
 
 grid.prototype.createCanvas = function(){
@@ -58,17 +59,17 @@ grid.prototype.createCanvas = function(){
 }
 
 grid.prototype.draw = function(x, y){
-	x *= this.scale;
-	y *= this.scale;
+	x = x*this.scale +this.center[0]-this.view[0];
+	y = y*this.scale +this.center[1]-this.view[1];
 	//this.ctx.moveTo(this.prevX, this.prevY);
 	this.ctx.lineTo(x, y);
 	this.ctx.stroke();
 	this.prevX = x;
 	this.prevY = y;
-	if (x > this.width/this.scale-100){
+	if (x > this.width-100){
 		this.extendBody(255,0);
 	}
-	if (y > this.height/this.scale-100){
+	if (y > this.height-100){
 		this.extendBody(0,255);
 	}
 	if (x < 100){
@@ -80,8 +81,8 @@ grid.prototype.draw = function(x, y){
 }
 
 grid.prototype.move = function(x, y){
-	x *= this.scale;
-	y *= this.scale;
+	x = x*this.scale +this.center[0]-this.view[0];
+	y = y*this.scale +this.center[1]-this.view[1];
 	this.prevX = x;
 	this.prevY = y;
 	this.ctx.moveTo(x, y);
