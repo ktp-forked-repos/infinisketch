@@ -3,6 +3,8 @@
 var brush = {
 	"x":0,
 	"y":0,
+	"offx":0,
+	"offy":0,
 	"down":false
 }
 var dir = {
@@ -19,31 +21,36 @@ var dir = {
 function main(){
 	requestAnimationFrame(main);
 	if(brush.down){
-		canvas.draw(brush.x, brush.y);
+		canvas.draw(brush.x+brush.offx, brush.y+brush.offy);
 	}
 	scroll();
 }
 function scroll(){
 	if (Math.abs(dir.x) < dir.size/3 && Math.abs(dir.y) < dir.size/3){return;}
 	if (!dir.down){return;}
+	var dx=0;var dy=0;
 	if (dir.mode == "scroll"){
-		window.scrollBy(scrollCurve(dir.x), scrollCurve(dir.y));
+		dx = scrollCurve(dir.x);
+		dy = scrollCurve(dir.y);
 	}
 	if (dir.mode == "button"){
 		dir.dt --;
 		if (dir.dt > 0){return;}
 		dir.dt = dir.T;
 		if (dir.x > dir.size/3){
-			window.scrollBy(50,0);
+			dx = 50;
 		} else if (dir.x < -dir.size/3) {
-			window.scrollBy(-50,0);
+			dx = -50;
 		}
 		if (dir.y > dir.size/3){
-			window.scrollBy(0,50);
+			dy = 50;
 		} else if (dir.y < -dir.size/3) {
-			window.scrollBy(0,-50);
+			dy = -50;
 		}
 	}
+	brush.offx += dx/canvas.scale;
+	brush.offy += dy/canvas.scale;
+	canvas.scroll(dx, dy);
 }
 function scrollCurve(n){
 	return (n-dir.size/3)/5;
@@ -54,25 +61,11 @@ function down(e){
 	brush.down=true;
 	brush.x=e.pageX;
 	brush.y=e.pageY;
-	canvas.move(brush.x, brush.y)
+	canvas.move(brush.x+brush.offx, brush.y+brush.offy)
 }
 function up(e){
 	console.log("cvs up");
 	brush.down=false;
-	if (brush.x > canvas.width/canvas.scale-100){
-		canvas.extendBody(255,0);
-	}
-	if (brush.y > canvas.height/canvas.scale-100){
-		canvas.extendBody(0,255);
-	}
-	if (brush.x < 100){
-		canvas.extendBody(-255,0);
-	}
-	if (brush.y < 100){
-		canvas.extendBody(0,-255);
-	}
-	//document.body.style.width=canvas.width/canvas.scale + "px";
-	//document.body.style.height=canvas.height/canvas.scale + "px";
 }
 function move(e){
 	brush.x=e.pageX;

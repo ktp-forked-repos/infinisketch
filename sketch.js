@@ -9,6 +9,7 @@ var grid = function(){
 	this.prevY;
 	this.width=this.scale*window.innerWidth;
 	this.height=this.scale*window.innerHeight;
+	this.center = [this.width/this.scale/2, this.height/this.scale/2];
 	this.cvs;
 	this.ctx;
 	this.createCanvas();
@@ -23,8 +24,17 @@ grid.prototype.extendBody = function(x, y){
 	var offsetX = (0<x)?0:-x;
 	var offsetY = (0<y)?0:-y;
 	this.ctx.drawImage(oldCvs, offsetX, offsetY);
-	window.scrollBy(offsetX/this.scale, offsetY/this.scale);
+	this.scroll(offsetX/this.scale, offsetY/this.scale);
 	document.body.removeChild(oldCvs);
+}
+grid.prototype.scroll = function(x, y){
+	this.center[0] += x;
+	this.center[1] += y;
+	this.reposition();
+}
+grid.prototype.reposition = function(){
+	this.cvs.style.left = (window.innerWidth/2 - this.center[0])/this.scale + "px";
+	this.cvs.style.top = (window.innerHeight/2 - this.center[1])/this.scale + "px";
 }
 
 grid.prototype.createCanvas = function(){
@@ -55,6 +65,18 @@ grid.prototype.draw = function(x, y){
 	this.ctx.stroke();
 	this.prevX = x;
 	this.prevY = y;
+	if (x > this.width/this.scale-100){
+		this.extendBody(255,0);
+	}
+	if (y > this.height/this.scale-100){
+		this.extendBody(0,255);
+	}
+	if (x < 100){
+		this.extendBody(-255,0);
+	}
+	if (y < 100){
+		this.extendBody(0,-255);
+	}
 }
 
 grid.prototype.move = function(x, y){
