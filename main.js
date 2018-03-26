@@ -15,6 +15,7 @@ var mode = "draw";
 function main(){
 	requestAnimationFrame(main);
 	if (!brush.down){return;}
+	if (brush.px == brush.x && brush.py == brush.y){return;}
 	switch (mode) {
 		case "draw":
 			canvas.draw(brush.x, brush.y);
@@ -62,6 +63,9 @@ function init(){
 	for (var i = 0; i < modeSwitches.length; i ++){
 		modeSwitches[i].addEventListener("change", modeSwitch);
 	}
+	document.body.addEventListener("pointerdown", down);
+	document.body.addEventListener("pointerup", up);
+	document.body.addEventListener("pointermove", move);
 	main();
 }
 

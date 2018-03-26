@@ -58,9 +58,6 @@ grid.prototype.createCanvas = function(){
 	document.body.appendChild(canvas);
 	var ctx = canvas.getContext("2d");
 	ctx.fillStyle = "rgba(0,0,0,1)";
-	canvas.addEventListener("pointerdown", down);
-	canvas.addEventListener("pointerup", up);
-	canvas.addEventListener("pointermove", move);
 	this.ctx=ctx;
 	this.cvs=canvas;
 }
