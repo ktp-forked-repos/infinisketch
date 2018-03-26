@@ -37,6 +37,11 @@ grid.prototype.reposition = function(){
 	this.cvs.style.left = (this.view[0] - this.center[0])/this.scale + "px";
 	this.cvs.style.top = (this.view[1] - this.center[1])/this.scale + "px";
 }
+grid.prototype.rescale = function(){
+	this.cvs.style.width = (this.width/this.scale)+"px";
+	this.cvs.style.height = (this.height/this.scale) + "px";
+	this.reposition();
+}
 
 grid.prototype.createCanvas = function(){
 	var x = this.width;
