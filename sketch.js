@@ -62,6 +62,9 @@ grid.prototype.createCanvas = function(){
 	this.cvs=canvas;
 }
 
+grid.prototype.setStyle = function(param, val){
+	this.ctx[param] = val;
+}
 grid.prototype.draw = function(x, y){
 	x = x*this.scale +this.center[0]-this.view[0];
 	y = y*this.scale +this.center[1]-this.view[1];
@@ -90,4 +93,5 @@ grid.prototype.move = function(x, y){
 	this.prevX = x;
 	this.prevY = y;
 	this.ctx.moveTo(x, y);
+	this.ctx.beginPath();
 }

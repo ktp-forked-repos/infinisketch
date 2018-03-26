@@ -66,6 +66,12 @@ function init(){
 	document.body.addEventListener("pointerdown", down);
 	document.body.addEventListener("pointerup", up);
 	document.body.addEventListener("pointermove", move);
+	document.getElementById("size").addEventListener("change", function(e){
+		canvas.setStyle("lineWidth", parseInt(e.target.value));
+	});
+	document.getElementById("color").addEventListener("change", function(e){
+		canvas.setStyle("strokeStyle", e.target.value);
+	});
 	main();
 }
 
