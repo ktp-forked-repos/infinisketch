@@ -25,11 +25,10 @@ function main(){
 		case "zoom":
 			var fac = 1- Math.abs(brush.py - brush.y)/100;
 			if (brush.py > brush.y){
-				canvas.scale *= fac;
+				canvas.rescale(fac);
 			} else {
-				canvas.scale /= fac;
+				canvas.rescale(1/fac);
 			}
-			canvas.rescale();
 	}
 	brush.px = brush.x;
 	brush.py = brush.y;
