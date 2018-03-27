@@ -20,6 +20,9 @@ function main(){
 		case "draw":
 			canvas.draw(brush.x, brush.y);
 			break;
+		case "erase":
+			canvas.erase(brush.x, brush.y);
+			break;
 		case "move":
 			canvas.scroll(brush.px - brush.x, brush.py - brush.y);
 			break;

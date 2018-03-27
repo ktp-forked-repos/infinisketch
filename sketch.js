@@ -90,6 +90,12 @@ grid.prototype.draw = function(x, y){
 		this.toExtend[1] = -255;
 	}
 }
+grid.prototype.erase = function(x, y){
+	x = x*this.scale +this.center[0]-this.view[0];
+	y = y*this.scale +this.center[1]-this.view[1];
+	var r = this.ctx.lineWidth * 10;
+	this.ctx.clearRect(x-r/2, y-r/2, r, r);
+}
 
 grid.prototype.move = function(x, y){
 	x = x*this.scale +this.center[0]-this.view[0];
