@@ -7,6 +7,7 @@ var grid = function(){
 	this.scale=window.devicePixelRatio;
 	this.prevX;
 	this.prevY;
+	this.toExtend = [0,0];
 	this.width=this.scale*window.innerWidth;
 	this.height=this.scale*window.innerHeight;
 	this.center = [this.width/2, this.height/2];
@@ -19,9 +20,12 @@ grid.ID=0;
 
 grid.prototype.extendBody = function(x, y){
 	var oldCvs = this.cvs;
+	var oldCtx = this.ctx;
 	this.width += this.scale * Math.abs(x);
 	this.height += this.scale * Math.abs(y);
 	this.createCanvas();
+	this.ctx.lineWidth = oldCtx.lineWidth;
+	this.ctx.strokeStyle = oldCtx.strokeStyle;
 	var offsetX = (0<x)?0:-x;
 	var offsetY = (0<y)?0:-y;
 	this.ctx.drawImage(oldCvs, offsetX*this.scale, offsetY*this.scale);
@@ -74,16 +78,16 @@ grid.prototype.draw = function(x, y){
 	this.prevX = x;
 	this.prevY = y;
 	if (x > this.width-100){
-		this.extendBody(255,0);
+		this.toExtend[0] = 255;
 	}
 	if (y > this.height-100){
-		this.extendBody(0,255);
+		this.toExtend[1] = 255;
 	}
 	if (x < 100){
-		this.extendBody(-255,0);
+		this.toExtend[0] = -255;
 	}
 	if (y < 100){
-		this.extendBody(0,-255);
+		this.toExtend[1] = -255;
 	}
 }
 
@@ -94,4 +98,10 @@ grid.prototype.move = function(x, y){
 	this.prevY = y;
 	this.ctx.moveTo(x, y);
 	this.ctx.beginPath();
+}
+grid.prototype.strokeEnd = function(){
+	if (this.toExtend[0] != 0 || this.toExtend[1] != 0){
+		this.extendBody(this.toExtend[0], this.toExtend[1]);
+	}
+	this.toExtend = [0,0];
 }

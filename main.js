@@ -45,6 +45,7 @@ function down(e){
 function up(e){
 	console.log("cvs up");
 	brush.down=false;
+	canvas.strokeEnd();
 }
 function move(e){
 	brush.x=e.pageX;
