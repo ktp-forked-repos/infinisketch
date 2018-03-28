@@ -78,6 +78,7 @@ function modeSwitch(e){
 }
 function changeMode(newMode){
 	document.getElementById(newMode).checked = true;
+	console.log(currMode());
 }
 function changeStyle(newstyle){
 	for (var i in newstyle){
@@ -90,20 +91,20 @@ function changeStyle(newstyle){
 function keyDown(e){
 	if (e.key == prevKey){return;}
 	prevKey = e.key;
-	console.log("key");
+	console.log(prevKey);
 	if (e.key in keymap){
 		var newMode = keymap[e.key];
 		if (newMode == currMode()){return;}
 		modeStack.push(newMode);
 		changeMode(newMode);
-	} else if (parseInt(e.key) != NaN){
+	} else if (parseInt(e.key) < styles.length){
 		changeStyle(styles[parseInt(e.key)]);
 	}
 }
 function keyUp(e){
 	if (modeStack.length == 1){return;}
 	var i = modeStack.indexOf(keymap[e.key]);
-	if (i == modeStack.length - 1) {
+	if (i == modeStack.length-1) {
 		modeStack.pop();
 		changeMode(currMode());
 	} else {
