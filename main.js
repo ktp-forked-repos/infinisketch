@@ -10,13 +10,14 @@ var brush = {
 	"responded":true,
 	"down":false
 }
-var prevMode, mode = "draw";
+var modeStack = ["draw"];
 var keymap = {
 	"a":"draw",
 	"s":"erase",
 	"d":"move",
 	"f":"zoom"
 }
+var prevKey = "";
 
 var styles = [
 	{"lineWidth":2, "strokeStyle":"#222222"},
@@ -29,7 +30,7 @@ function main(){
 	requestAnimationFrame(main);
 	if (!brush.down){return;}
 	if (brush.px == brush.x && brush.py == brush.y){return;}
-	switch (mode) {
+	switch (currMode()) {
 		case "draw":
 			canvas.draw(brush.x, brush.y);
 			break;
@@ -68,16 +69,15 @@ function move(e){
 	brush.y=e.pageY;
 }
 
-function modeSwitch(e){
-	mode = e.target.id;
-	console.log(mode);
+function currMode(){
+	return modeStack[modeStack.length-1];
 }
-function changeMode(newmode){
-	prevMode = mode;
-	mode = newmode;
-	var elem = document.getElementById(newmode);
-	elem.checked = true;
-	elem.dispatchEvent(new InputEvent("change"));
+function modeSwitch(e){
+	modeStack = [e.target.id];
+	console.log(currMode());
+}
+function changeMode(newMode){
+	document.getElementById(newMode).checked = true;
 }
 function changeStyle(newstyle){
 	for (var i in newstyle){
@@ -88,19 +88,27 @@ function changeStyle(newstyle){
 }
 
 function keyDown(e){
-	if (e.repeat){return;}
+	if (e.key == prevKey){return;}
+	prevKey = e.key;
+	console.log("key");
 	if (e.key in keymap){
-		e.preventDefault();
-		changeMode(keymap[e.key]);
+		var newMode = keymap[e.key];
+		if (newMode == currMode()){return;}
+		modeStack.push(newMode);
+		changeMode(newMode);
 	} else if (parseInt(e.key) != NaN){
 		changeStyle(styles[parseInt(e.key)]);
 	}
 }
 function keyUp(e){
-	if (prevMode == null){return;}
-	mode = prevMode;
-	changeMode(prevMode);
-	prevMode = null;
+	if (modeStack.length == 1){return;}
+	var i = modeStack.indexOf(keymap[e.key]);
+	if (i == modeStack.length - 1) {
+		modeStack.pop();
+		changeMode(currMode());
+	} else {
+		modeStack.splice(i, 1);
+	}
 }
 
 function init(){
