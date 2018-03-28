@@ -18,6 +18,13 @@ var keymap = {
 	"f":"zoom"
 }
 
+var styles = [
+	{"lineWidth":2, "strokeStyle":"#222222"},
+	{"lineWidth":4, "strokeStyle":"#DD1111"},
+	{"lineWidth":4, "strokeStyle":"#11DD11"},
+	{"lineWidth":4, "strokeStyle":"#1111DD"},
+]
+
 function main(){
 	requestAnimationFrame(main);
 	if (!brush.down){return;}
@@ -72,15 +79,28 @@ function changeMode(newmode){
 	elem.checked = true;
 	elem.dispatchEvent(new InputEvent("change"));
 }
+function changeStyle(newstyle){
+	for (var i in newstyle){
+		console.log(i);
+		canvas.setStyle(i, newstyle[i]);
+		document.getElementById(i).value = newstyle[i];
+	}
+}
 
 function keyDown(e){
 	if (e.repeat){return;}
-	e.preventDefault();
-	changeMode(keymap[e.key]);
+	if (e.key in keymap){
+		e.preventDefault();
+		changeMode(keymap[e.key]);
+	} else if (parseInt(e.key) != NaN){
+		changeStyle(styles[parseInt(e.key)]);
+	}
 }
 function keyUp(e){
+	if (prevMode == null){return;}
 	mode = prevMode;
 	changeMode(prevMode);
+	prevMode = null;
 }
 
 function init(){
@@ -95,10 +115,10 @@ function init(){
 	document.body.addEventListener("pointermove", move);
 	document.body.addEventListener("keydown", keyDown);
 	document.body.addEventListener("keyup", keyUp);
-	document.getElementById("size").addEventListener("change", function(e){
+	document.getElementById("lineWidth").addEventListener("change", function(e){
 		canvas.setStyle("lineWidth", parseInt(e.target.value));
 	});
-	document.getElementById("color").addEventListener("change", function(e){
+	document.getElementById("strokeStyle").addEventListener("change", function(e){
 		canvas.setStyle("strokeStyle", e.target.value);
 	});
 	main();
