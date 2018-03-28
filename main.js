@@ -10,7 +10,13 @@ var brush = {
 	"responded":true,
 	"down":false
 }
-var mode = "draw";
+var prevMode, mode = "draw";
+var keymap = {
+	"a":"draw",
+	"s":"erase",
+	"d":"move",
+	"f":"zoom"
+}
 
 function main(){
 	requestAnimationFrame(main);
@@ -59,6 +65,23 @@ function modeSwitch(e){
 	mode = e.target.id;
 	console.log(mode);
 }
+function changeMode(newmode){
+	prevMode = mode;
+	mode = newmode;
+	var elem = document.getElementById(newmode);
+	elem.checked = true;
+	elem.dispatchEvent(new InputEvent("change"));
+}
+
+function keyDown(e){
+	if (e.repeat){return;}
+	e.preventDefault();
+	changeMode(keymap[e.key]);
+}
+function keyUp(e){
+	mode = prevMode;
+	changeMode(prevMode);
+}
 
 function init(){
 	console.log("init");
@@ -70,6 +93,8 @@ function init(){
 	document.body.addEventListener("pointerdown", down);
 	document.body.addEventListener("pointerup", up);
 	document.body.addEventListener("pointermove", move);
+	document.body.addEventListener("keydown", keyDown);
+	document.body.addEventListener("keyup", keyUp);
 	document.getElementById("size").addEventListener("change", function(e){
 		canvas.setStyle("lineWidth", parseInt(e.target.value));
 	});
