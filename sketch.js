@@ -62,6 +62,7 @@ grid.prototype.createCanvas = function(){
 	document.body.appendChild(canvas);
 	var ctx = canvas.getContext("2d");
 	ctx.fillStyle = "rgba(0,0,0,1)";
+	ctx.miterLimit = 2;
 	this.ctx=ctx;
 	this.cvs=canvas;
 }
@@ -77,6 +78,16 @@ grid.prototype.draw = function(x, y){
 	this.ctx.stroke();
 	this.prevX = x;
 	this.prevY = y;
+	this.testExtend(x, y);
+}
+grid.prototype.erase = function(x, y){
+	x = x*this.scale +this.center[0]-this.view[0];
+	y = y*this.scale +this.center[1]-this.view[1];
+	var r = this.ctx.lineWidth * 10;
+	this.ctx.clearRect(x-r/2, y-r/2, r, r);
+	this.testExtend(x, y);
+}
+grid.prototype.testExtend = function(x, y){
 	if (x > this.width-100){
 		this.toExtend[0] = 255;
 	}
@@ -90,20 +101,14 @@ grid.prototype.draw = function(x, y){
 		this.toExtend[1] = -255;
 	}
 }
-grid.prototype.erase = function(x, y){
-	x = x*this.scale +this.center[0]-this.view[0];
-	y = y*this.scale +this.center[1]-this.view[1];
-	var r = this.ctx.lineWidth * 10;
-	this.ctx.clearRect(x-r/2, y-r/2, r, r);
-}
 
 grid.prototype.move = function(x, y){
 	x = x*this.scale +this.center[0]-this.view[0];
 	y = y*this.scale +this.center[1]-this.view[1];
 	this.prevX = x;
 	this.prevY = y;
-	this.ctx.moveTo(x, y);
 	this.ctx.beginPath();
+	this.ctx.moveTo(x, y);
 }
 grid.prototype.strokeEnd = function(){
 	if (this.toExtend[0] != 0 || this.toExtend[1] != 0){

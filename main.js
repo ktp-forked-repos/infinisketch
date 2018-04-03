@@ -21,15 +21,24 @@ var prevKey = "";
 
 var styles = [
 	{"lineWidth":2, "strokeStyle":"#222222"},
-	{"lineWidth":4, "strokeStyle":"#DD1111"},
-	{"lineWidth":4, "strokeStyle":"#11DD11"},
-	{"lineWidth":4, "strokeStyle":"#1111DD"},
+	{"lineWidth":4, "strokeStyle":"#c55f39"},
+	{"lineWidth":2, "strokeStyle":"#222222"},
+	{"lineWidth":2, "strokeStyle":"#98a292"},
+	{"lineWidth":2, "strokeStyle":"#37c345"},
+	{"lineWidth":2, "strokeStyle":"#37c3be"},
+	{"lineWidth":2, "strokeStyle":"#ffa8bc"},
+	{"lineWidth":2, "strokeStyle":"#8c421c"},
+	{"lineWidth":2, "strokeStyle":"#7df088"},
+	{"lineWidth":2, "strokeStyle":"#54f2b9"},
 ]
 
 function main(){
 	requestAnimationFrame(main);
 	if (!brush.down){return;}
-	if (brush.px == brush.x && brush.py == brush.y){return;}
+	if (Math.abs(brush.px - brush.x) < 1 
+			&& Math.abs(brush.py - brush.y) < 1){
+		return;
+	}
 	switch (currMode()) {
 		case "draw":
 			canvas.draw(brush.x, brush.y);
@@ -54,10 +63,12 @@ function main(){
 
 function down(e){
 	console.log("cvs down");
+	if (e.button != 0){return;}
 	brush.down=true;
 	brush.x = brush.px = brush.x0 = e.pageX;
 	brush.y = brush.py = brush.y0 = e.pageY;
-	canvas.move(brush.x, brush.y)
+	canvas.move(brush.x-2, brush.y-2);
+	canvas.draw(brush.x, brush.y);
 }
 function up(e){
 	console.log("cvs up");
@@ -102,6 +113,7 @@ function keyDown(e){
 	}
 }
 function keyUp(e){
+	prevKey = "";
 	if (modeStack.length == 1){return;}
 	var i = modeStack.indexOf(keymap[e.key]);
 	if (i == modeStack.length-1) {
@@ -121,6 +133,9 @@ function init(){
 	}
 	document.body.addEventListener("pointerdown", down);
 	document.body.addEventListener("pointerup", up);
+	document.body.addEventListener("pointercancel", up);
+	document.body.addEventListener("pointerout", up);
+	document.body.addEventListener("pointerleave", up);
 	document.body.addEventListener("pointermove", move);
 	document.body.addEventListener("keydown", keyDown);
 	document.body.addEventListener("keyup", keyUp);
