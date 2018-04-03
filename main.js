@@ -67,12 +67,14 @@ function down(e){
 	brush.down=true;
 	brush.x = brush.px = brush.x0 = e.pageX;
 	brush.y = brush.py = brush.y0 = e.pageY;
-	canvas.move(brush.x-2, brush.y-2);
-	canvas.draw(brush.x, brush.y);
+	canvas.move(brush.x, brush.y);
 }
 function up(e){
 	console.log("cvs up");
 	brush.down=false;
+	if (Math.abs(brush.x-brush.x0) < 2 && Math.abs(brush.y-brush.y0) < 2) {
+		canvas.draw(brush.x+2, brush.y+2);
+	}
 	canvas.strokeEnd();
 }
 function move(e){
