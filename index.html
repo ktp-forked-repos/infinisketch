@@ -24,13 +24,14 @@ body{
 	padding:0;
 	background-color:#CCCCCC;
 	touch-action:none;
-	overflow:visible;
+	overflow:hidden;
 }
 
 canvas{
 	background-color:#FFFFFF;
 	cursor:crosshair;
-	position:fixed;
+    width:100%;
+    height:100%;
 }
 
 .controls{
@@ -59,7 +60,8 @@ canvas{
 </div>
 
 <script src="main.js" ></script>
-<script src="sketch.js" ></script>
+<script src="glsketch.js" ></script>
+<script src="http://twgljs.org/dist/4.x/twgl.js" ></script>
 
 </body>
 

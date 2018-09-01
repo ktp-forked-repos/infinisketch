@@ -32,6 +32,13 @@ var styles = [
 	{"lineWidth":2, "strokeStyle":"#54f2b9"},
 ]
 
+function opt(a, b) {
+    if (typeof a !== "undefined") {
+        return a;
+    }
+    return b;
+}
+
 function main(){
 	requestAnimationFrame(main);
 	if (!brush.down){return;}
@@ -41,39 +48,38 @@ function main(){
 	}
 	switch (currMode()) {
 		case "draw":
-			canvas.draw(brush.x, brush.y);
+			canvas.draw([brush.x, brush.y]);
 			break;
 		case "erase":
-			canvas.erase(brush.x, brush.y);
+			canvas.erase([brush.x, brush.y]);
 			break;
 		case "move":
-			canvas.scroll(brush.px - brush.x, brush.py - brush.y);
+			canvas.pan([brush.px - brush.x, brush.py - brush.y]);
 			break;
 		case "zoom":
 			var fac = 1- Math.abs(brush.py - brush.y)/100;
 			if (brush.py > brush.y){
-				canvas.rescale(fac);
+				canvas.zoom(fac);
 			} else {
-				canvas.rescale(1/fac);
+				canvas.zoom(1/fac);
 			}
 	}
 	brush.px = brush.x;
 	brush.py = brush.y;
+	canvas.render();
 }
 
 function down(e){
-	console.log("cvs down");
 	if (e.button != 0){return;}
 	brush.down=true;
 	brush.x = brush.px = brush.x0 = e.pageX;
 	brush.y = brush.py = brush.y0 = e.pageY;
-	canvas.move(brush.x, brush.y);
+	canvas.move([brush.x, brush.y]);
 }
 function up(e){
-	console.log("cvs up");
 	brush.down=false;
 	if (Math.abs(brush.x-brush.x0) < 2 && Math.abs(brush.y-brush.y0) < 2) {
-		canvas.draw(brush.x+2, brush.y+2);
+		canvas.draw([brush.x+2, brush.y+2]);
 	}
 	canvas.strokeEnd();
 }
@@ -95,7 +101,6 @@ function changeMode(newMode){
 }
 function changeStyle(newstyle){
 	for (var i in newstyle){
-		console.log(i);
 		canvas.setStyle(i, newstyle[i]);
 		document.getElementById(i).value = newstyle[i];
 	}
@@ -104,7 +109,6 @@ function changeStyle(newstyle){
 function keyDown(e){
 	if (e.key == prevKey){return;}
 	prevKey = e.key;
-	console.log(prevKey);
 	if (e.key in keymap){
 		var newMode = keymap[e.key];
 		if (newMode == currMode()){return;}
@@ -128,7 +132,9 @@ function keyUp(e){
 
 function init(){
 	console.log("init");
-	window.canvas = new grid();
+	window.canvas = new GlSketch();
+	document.body.appendChild(canvas.domElement);
+	canvas.resize();
 	var modeSwitches = document.getElementsByClassName("mode");
 	for (var i = 0; i < modeSwitches.length; i ++){
 		modeSwitches[i].addEventListener("change", modeSwitch);
@@ -151,4 +157,4 @@ function init(){
 }
 
 document.addEventListener("DOMContentLoaded", function(event) {init()});
-window.onerror = function(e){alert(e);}
+// window.onerror = function(e){alert(e);}
