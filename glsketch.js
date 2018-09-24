@@ -33,18 +33,29 @@ class GlSketch {
         var bufferInfo = twgl.createBufferInfoFromArrays(this.gl, this.arrays);
         twgl.setBuffersAndAttributes(this.gl, this.programInfo, bufferInfo);
         twgl.setUniforms(this.programInfo, this.uniforms);
-        twgl.drawBufferInfo(this.gl, bufferInfo, this.gl.LINES, this.numPoints)
+        twgl.drawBufferInfo(this.gl, bufferInfo, this.gl.TRIANGLE_STRIP, this.numPoints)
     }
     addPoint(coord) {
-        this.arrays["a_pos"].data[this.numPoints*2] = coord[0];
-        this.arrays["a_pos"].data[this.numPoints*2+1] = coord[1];
+        var x = 2. * (coord[0]/this.gl.canvas.width) - 1.;
+        var y = 2. * (1. - (coord[1]/this.gl.canvas.height)) - 1.;
+        this.arrays["a_pos"].data[this.numPoints*2] = x;
+        this.arrays["a_pos"].data[this.numPoints*2+1] = y;
         this.numPoints ++;
     }
 
     draw(coord) {
-        console.log("draw", coord);
-        this.addPoint(this.prev);
-        this.addPoint(coord)
+//         console.log("draw", coord);
+        if (this.numPoints % 1000 == 0) {
+            console.log("points", this.numPoints);
+        }
+        var norm = [
+            -coord[1]+this.prev[1],
+            coord[0]-this.prev[0]
+        ];
+        var dist = Math.sqrt(Math.pow(norm[0],2)+ Math.pow(norm[1],2))/10;
+        norm[0] /= dist; norm[1] /= dist;
+        this.addPoint([coord[0]-norm[0], coord[1]-norm[1]]);
+        this.addPoint([coord[0]+norm[0], coord[1]+norm[1]]);
         this.prev = coord;
     }
     erase(coord) {
@@ -59,21 +70,22 @@ class GlSketch {
     move(coord) {
         console.log("move", coord);
         this.prev = coord;
+        this.addPoint(coord);
+        this.addPoint(coord);
     }
     strokeEnd() {
         console.log("end");
+        this.addPoint(this.prev);
+        this.addPoint(this.prev);
     }
 }
 
 const vs = `#version 300 es
 
 in vec2 a_pos;
-uniform vec2 u_res;
 
 void main() {
-    float x = 2. * (a_pos.x/u_res.x) - 1.;
-    float y = 2. * (1. - (a_pos.y/u_res.y)) - 1.;
-    gl_Position = vec4(x, y, 0, 1);
+    gl_Position = vec4(a_pos, 0, 1);
 }
 `;
 
