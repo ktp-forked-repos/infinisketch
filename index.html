@@ -22,7 +22,7 @@ body{
 	height:100%;
 	margin:0;
 	padding:0;
-	background-color:#CCCCCC;
+	background-color: #CCC;
 	touch-action:none;
 	overflow:hidden;
 }
@@ -56,7 +56,9 @@ canvas{
 	<input class="mode" type="radio" name="mode" id="zoom" value="zoom" />
 		<label for="zoom">Zoom</label>
 	<input type="range" id="lineWidth" min="1" max="10" value="2" />
-	<input type="color" id="strokeStyle" value="#000000" />
+	<input type="range" id="paletteX" min="0" max="255" value="0" />
+	<input type="range" id="paletteY" min="0" max="255" value="0" />
+	<img src="palette.png" id="palette" />
 </div>
 
 <script src="main.js" ></script>

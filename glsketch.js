@@ -3,9 +3,17 @@
 const BUFF_SIZE = 65536;
 
 class GlSketch {
-    constructor(size) {
+    constructor(palette) {
         var cvs = document.createElement("canvas");
         this.domElement = cvs;
+        this.numPoints = 0;
+        this.prev = [0,0];
+        this.style = {
+            "lineWidth": 2,
+            "paletteX": 0,
+            "paletteY": 0,
+        };
+
         this.gl = cvs.getContext("webgl2");
 
         this.programInfo = twgl.createProgramInfo(this.gl, [vs, fs]);
@@ -15,13 +23,22 @@ class GlSketch {
             a_pos: {
                 numComponents: 2,
                 data: new Float32Array(BUFF_SIZE),
+            },
+            a_paletteCoord: {
+                numComponents: 2,
+                data: new Float32Array(BUFF_SIZE),
             }
         };
+        this.palette = twgl.createTexture(this.gl, {
+            "src": palette,
+            "width": palette.width,
+            "height": palette.height,
+            "wrap": this.gl.CLAMP_TO_EDGE,
+            "minmag": this.gl.NEAREST,
+        });
         this.uniforms = {
-            u_res: [0,0],
+            u_palette: this.palette,
         }
-        this.numPoints = 0;
-        this.prev = [0,0];
     }
 
     resize() {
@@ -40,7 +57,14 @@ class GlSketch {
         var y = 2. * (1. - (coord[1]/this.gl.canvas.height)) - 1.;
         this.arrays["a_pos"].data[this.numPoints*2] = x;
         this.arrays["a_pos"].data[this.numPoints*2+1] = y;
+        this.arrays["a_paletteCoord"].data[this.numPoints*2] = this.style.paletteX;
+        this.arrays["a_paletteCoord"].data[this.numPoints*2+1] = this.style.paletteY;
         this.numPoints ++;
+    }
+    setStyle(prop, val) {
+        if (prop in this.style) {
+            this.style[prop] = val;
+        }
     }
 
     draw(coord) {
@@ -52,7 +76,7 @@ class GlSketch {
             -coord[1]+this.prev[1],
             coord[0]-this.prev[0]
         ];
-        var dist = Math.sqrt(Math.pow(norm[0],2)+ Math.pow(norm[1],2))/10;
+        var dist = Math.sqrt(Math.pow(norm[0],2)+ Math.pow(norm[1],2))/this.style.lineWidth;
         norm[0] /= dist; norm[1] /= dist;
         this.addPoint([coord[0]-norm[0], coord[1]-norm[1]]);
         this.addPoint([coord[0]+norm[0], coord[1]+norm[1]]);
@@ -83,18 +107,29 @@ class GlSketch {
 const vs = `#version 300 es
 
 in vec2 a_pos;
+in vec2 a_paletteCoord;
+
+out vec2 v_paletteCoord;
 
 void main() {
     gl_Position = vec4(a_pos, 0, 1);
+    v_paletteCoord = a_paletteCoord;
+    //v_paletteCoord = a_pos;
 }
 `;
 
 const fs = `#version 300 es
 precision highp float;
 
+in vec2 v_paletteCoord;
+
+uniform sampler2D u_palette;
+
 out vec4 o_color;
 
 void main() {
-    o_color = vec4(1, 0, 0.5, 1);
+    //o_color = vec4(1, 0, 0.5, 1);
+    //o_color = vec4(v_paletteCoord, 1, 1);
+    o_color = texture(u_palette, v_paletteCoord);
 }
 `;

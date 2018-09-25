@@ -132,7 +132,8 @@ function keyUp(e){
 
 function init(){
 	console.log("init");
-	window.canvas = new GlSketch();
+	var palette = document.getElementById("palette")
+	window.canvas = new GlSketch(palette);
 	document.body.appendChild(canvas.domElement);
 	canvas.resize();
 	var modeSwitches = document.getElementsByClassName("mode");
@@ -150,8 +151,11 @@ function init(){
 	document.getElementById("lineWidth").addEventListener("change", function(e){
 		canvas.setStyle("lineWidth", parseInt(e.target.value));
 	});
-	document.getElementById("strokeStyle").addEventListener("change", function(e){
-		canvas.setStyle("strokeStyle", e.target.value);
+	document.getElementById("paletteX").addEventListener("change", function(e){
+		canvas.setStyle("paletteX", e.target.value/256);
+	});
+	document.getElementById("paletteY").addEventListener("change", function(e){
+		canvas.setStyle("paletteY", e.target.value/256);
 	});
 	main();
 }
