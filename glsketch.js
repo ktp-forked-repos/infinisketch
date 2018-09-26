@@ -29,6 +29,7 @@ class GlSketch {
                 data: new Float32Array(BUFF_SIZE),
             }
         };
+        this.bufferInfo = twgl.createBufferInfoFromArrays(this.gl, this.arrays);
         this.palette = twgl.createTexture(this.gl, {
             "src": palette,
             "width": palette.width,
@@ -37,24 +38,32 @@ class GlSketch {
             "minmag": this.gl.NEAREST,
         });
         this.uniforms = {
+            u_aspect: 1,
+            u_offset: new Float32Array([0,0]),
+            u_scale: 1,
             u_palette: this.palette,
         }
     }
 
     resize() {
-        twgl.resizeCanvasToDisplaySize(this.gl.canvas);
-        this.uniforms["u_res"] = [this.gl.canvas.width, this.gl.canvas.height];
-        this.gl.viewport(0,0, this.gl.canvas.width, this.gl.canvas.height);
+        twgl.resizeCanvasToDisplaySize(this.gl.canvas, window.devicePixelRatio);
+        this.size = [this.gl.canvas.width, this.gl.canvas.height];
+        this.uniforms.u_aspect = this.size[0]/this.size[1];
+        this.gl.viewport(0,0, this.size[0], this.size[1]);
     }
     render() {
-        var bufferInfo = twgl.createBufferInfoFromArrays(this.gl, this.arrays);
-        twgl.setBuffersAndAttributes(this.gl, this.programInfo, bufferInfo);
+        twgl.setAttribInfoBufferFromArray(this.gl, this.bufferInfo.attribs.a_pos, this.arrays.a_pos);
+        twgl.setAttribInfoBufferFromArray(this.gl, this.bufferInfo.attribs.a_paletteCoord, this.arrays.a_paletteCoord);
+        twgl.setBuffersAndAttributes(this.gl, this.programInfo, this.bufferInfo);
         twgl.setUniforms(this.programInfo, this.uniforms);
-        twgl.drawBufferInfo(this.gl, bufferInfo, this.gl.TRIANGLE_STRIP, this.numPoints)
+        twgl.drawBufferInfo(this.gl, this.bufferInfo, this.gl.TRIANGLE_STRIP, this.numPoints)
     }
     addPoint(coord) {
-        var x = 2. * (coord[0]/this.gl.canvas.width) - 1.;
-        var y = 2. * (1. - (coord[1]/this.gl.canvas.height)) - 1.;
+        var x = 2. * (coord[0]/window.innerHeight) - 1.;
+        var y = 2. * (1. - (coord[1]/window.innerHeight)) - 1.;
+        x /= this.uniforms.u_scale; y /= this.uniforms.u_scale;
+        x -= this.uniforms.u_offset[0];
+        y -= this.uniforms.u_offset[1];
         this.arrays["a_pos"].data[this.numPoints*2] = x;
         this.arrays["a_pos"].data[this.numPoints*2+1] = y;
         this.arrays["a_paletteCoord"].data[this.numPoints*2] = this.style.paletteX;
@@ -68,7 +77,6 @@ class GlSketch {
     }
 
     draw(coord) {
-//         console.log("draw", coord);
         if (this.numPoints % 1000 == 0) {
             console.log("points", this.numPoints);
         }
@@ -86,13 +94,15 @@ class GlSketch {
         console.log("erase", coord);
     }
     pan(delta) {
-        console.log("pan", delta);
+        var scale = 1/this.size[1]*2/this.uniforms.u_scale;
+        this.uniforms.u_offset[0] -= delta[0] * scale;
+        this.uniforms.u_offset[1] += delta[1] * scale;
     }
     zoom(delta) {
         console.log("zoom", delta);
+        this.uniforms.u_scale *= delta;
     }
     move(coord) {
-        console.log("move", coord);
         this.prev = coord;
         this.addPoint(coord);
         this.addPoint(coord);
@@ -106,13 +116,20 @@ class GlSketch {
 
 const vs = `#version 300 es
 
+uniform float u_aspect;
+uniform vec2 u_offset;
+uniform float u_scale;
+
 in vec2 a_pos;
 in vec2 a_paletteCoord;
 
 out vec2 v_paletteCoord;
 
 void main() {
-    gl_Position = vec4(a_pos, 0, 1);
+    vec2 pos = a_pos;
+    pos.x /= u_aspect;
+    pos = (pos+u_offset) * u_scale;
+    gl_Position = vec4(pos, 0, 1);
     v_paletteCoord = a_paletteCoord;
     //v_paletteCoord = a_pos;
 }
