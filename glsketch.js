@@ -58,7 +58,8 @@ class GlSketch {
         twgl.setUniforms(this.programInfo, this.uniforms);
         twgl.drawBufferInfo(this.gl, this.bufferInfo, this.gl.TRIANGLE_STRIP, this.numPoints)
     }
-    addPoint(coord) {
+    addPoint(coord, style) {
+        style = style || this.style;
         var x = 2. * (coord[0] - window.innerWidth/2)/window.innerHeight;
         var y = 2. * (1. - (coord[1]/window.innerHeight)) - 1.;
         x /= this.uniforms.u_scale; y /= this.uniforms.u_scale;
@@ -66,9 +67,20 @@ class GlSketch {
         y -= this.uniforms.u_offset[1];
         this.arrays["a_pos"].data[this.numPoints*2] = x;
         this.arrays["a_pos"].data[this.numPoints*2+1] = y;
-        this.arrays["a_paletteCoord"].data[this.numPoints*2] = this.style.paletteX;
-        this.arrays["a_paletteCoord"].data[this.numPoints*2+1] = this.style.paletteY;
+        this.arrays["a_paletteCoord"].data[this.numPoints*2] = style.paletteX;
+        this.arrays["a_paletteCoord"].data[this.numPoints*2+1] = style.paletteY;
         this.numPoints ++;
+    }
+    addLine(coord, style) {
+        style = style || this.style;
+        var norm = [
+            -coord[1]+this.prev[1],
+            coord[0]-this.prev[0]
+        ];
+        var dist = Math.sqrt(Math.pow(norm[0],2)+ Math.pow(norm[1],2))/style.lineWidth;
+        norm[0] /= dist; norm[1] /= dist;
+        this.addPoint([coord[0]-norm[0], coord[1]-norm[1]], style);
+        this.addPoint([coord[0]+norm[0], coord[1]+norm[1]], style);
     }
     setStyle(prop, val) {
         if (prop in this.style) {
@@ -80,18 +92,15 @@ class GlSketch {
         if (this.numPoints % 1000 == 0) {
             console.log("points", this.numPoints);
         }
-        var norm = [
-            -coord[1]+this.prev[1],
-            coord[0]-this.prev[0]
-        ];
-        var dist = Math.sqrt(Math.pow(norm[0],2)+ Math.pow(norm[1],2))/this.style.lineWidth;
-        norm[0] /= dist; norm[1] /= dist;
-        this.addPoint([coord[0]-norm[0], coord[1]-norm[1]]);
-        this.addPoint([coord[0]+norm[0], coord[1]+norm[1]]);
+        this.addLine(coord);
         this.prev = coord;
     }
     erase(coord) {
-        console.log("erase", coord);
+        this.addLine(coord, {
+            "lineWidth": 10,
+            "paletteX": -1,
+            "paletteY": -1,
+        });
     }
     pan(delta) {
         var scale = 1/window.innerHeight*2/this.uniforms.u_scale;
@@ -99,7 +108,6 @@ class GlSketch {
         this.uniforms.u_offset[1] += delta[1] * scale;
     }
     zoom(delta) {
-        console.log("zoom", delta);
         this.uniforms.u_scale *= delta;
     }
     move(coord) {
@@ -148,6 +156,10 @@ out vec4 o_color;
 void main() {
     //o_color = vec4(1, 0, 0.5, 1);
     //o_color = vec4(v_paletteCoord, 1, 1);
-    o_color = texture(u_palette, v_paletteCoord);
+    if (v_paletteCoord.x < 0. || v_paletteCoord.y < 0.) {
+        o_color = vec4(0, 0, 0, 0);
+    } else {
+        o_color = texture(u_palette, v_paletteCoord);
+    }
 }
 `;
