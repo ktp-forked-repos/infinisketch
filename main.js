@@ -140,6 +140,7 @@ function init(){
 	for (var i = 0; i < modeSwitches.length; i ++){
 		modeSwitches[i].addEventListener("change", modeSwitch);
 	}
+	window.addEventListener("resize", ()=>(canvas.resize()));
 	document.body.addEventListener("pointerdown", down);
 	document.body.addEventListener("pointerup", up);
 	document.body.addEventListener("pointercancel", up);

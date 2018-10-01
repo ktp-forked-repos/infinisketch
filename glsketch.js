@@ -59,7 +59,7 @@ class GlSketch {
         twgl.drawBufferInfo(this.gl, this.bufferInfo, this.gl.TRIANGLE_STRIP, this.numPoints)
     }
     addPoint(coord) {
-        var x = 2. * (coord[0]/window.innerHeight) - 1.;
+        var x = 2. * (coord[0] - window.innerWidth/2)/window.innerHeight;
         var y = 2. * (1. - (coord[1]/window.innerHeight)) - 1.;
         x /= this.uniforms.u_scale; y /= this.uniforms.u_scale;
         x -= this.uniforms.u_offset[0];
@@ -94,7 +94,7 @@ class GlSketch {
         console.log("erase", coord);
     }
     pan(delta) {
-        var scale = 1/this.size[1]*2/this.uniforms.u_scale;
+        var scale = 1/window.innerHeight*2/this.uniforms.u_scale;
         this.uniforms.u_offset[0] -= delta[0] * scale;
         this.uniforms.u_offset[1] += delta[1] * scale;
     }
@@ -126,9 +126,10 @@ in vec2 a_paletteCoord;
 out vec2 v_paletteCoord;
 
 void main() {
-    vec2 pos = a_pos;
-    pos.x /= u_aspect;
-    pos = (pos+u_offset) * u_scale;
+    vec2 pos;
+    pos.x = (a_pos.x + u_offset.x) / u_aspect;
+    pos.y = (a_pos.y + u_offset.y);
+    pos *= u_scale;
     gl_Position = vec4(pos, 0, 1);
     v_paletteCoord = a_paletteCoord;
     //v_paletteCoord = a_pos;
