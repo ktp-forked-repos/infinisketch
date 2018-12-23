@@ -1,36 +1,20 @@
 "use strict"
 
-var brush = {
-	"x":0,
-	"y":0,
-	"px":0,
-	"py":0,
-	"x0":0,
-	"y0":0,
-	"responded":true,
+let brush = {
+	p: [0, 0], // position
+	d: [0, 0], // delta
+	p0: [0, 0],// start position
 	"down":false
 }
-var modeStack = ["draw"];
-var keymap = {
+let keymap = {
 	"a":"draw",
 	"s":"erase",
 	"d":"move",
 	"f":"zoom"
 }
-var prevKey = "";
+let prevKey = "";
+let currMode = "draw";
 
-var styles = [
-	{"lineWidth":2, "strokeStyle":"#222222"},
-	{"lineWidth":4, "strokeStyle":"#c55f39"},
-	{"lineWidth":2, "strokeStyle":"#222222"},
-	{"lineWidth":2, "strokeStyle":"#98a292"},
-	{"lineWidth":2, "strokeStyle":"#37c345"},
-	{"lineWidth":2, "strokeStyle":"#37c3be"},
-	{"lineWidth":2, "strokeStyle":"#ffa8bc"},
-	{"lineWidth":2, "strokeStyle":"#8c421c"},
-	{"lineWidth":2, "strokeStyle":"#7df088"},
-	{"lineWidth":2, "strokeStyle":"#54f2b9"},
-]
 
 function opt(a, b) {
     if (typeof a !== "undefined") {
@@ -42,68 +26,58 @@ function opt(a, b) {
 function main(){
 	requestAnimationFrame(main);
 	if (!brush.down){return;}
-	if (Math.abs(brush.px - brush.x) < 1 
-			&& Math.abs(brush.py - brush.y) < 1){
+	if (Math.abs(brush.d[0]) < 1 
+			&& Math.abs(brush.d[1]) < 1){
 		return;
 	}
-	switch (currMode()) {
+	switch (currMode) {
 		case "draw":
-			canvas.draw([brush.x, brush.y]);
+			canvas.draw(brush.p);
 			break;
 		case "erase":
-			canvas.erase([brush.x, brush.y]);
+			canvas.erase(brush.p);
 			break;
 		case "move":
-			canvas.pan([brush.px - brush.x, brush.py - brush.y]);
+			canvas.pan(brush.d);
 			break;
 		case "zoom":
-			var fac = 1- Math.abs(brush.py - brush.y)/100;
-			if (brush.py > brush.y){
+			var fac = 1- Math.abs(brush.d[1])/100;
+			if (brush.d[1] > 0){
 				canvas.zoom(fac);
 			} else {
 				canvas.zoom(1/fac);
 			}
 	}
-	brush.px = brush.x;
-	brush.py = brush.y;
+	brush.d[0] = 0;
+	brush.d[1] = 0;
 	canvas.render();
 }
 
 function down(e){
 	if (e.button != 0){return;}
 	brush.down=true;
-	brush.x = brush.px = brush.x0 = e.pageX;
-	brush.y = brush.py = brush.y0 = e.pageY;
-	canvas.move([brush.x, brush.y]);
+	brush.p[0] = brush.p0[0] = e.pageX;
+	brush.p[1] = brush.p0[1] = e.pageY;
+	brush.d[0] = brush.d[1] = 0;
+	canvas.move(brush.p);
 }
 function up(e){
 	brush.down=false;
-	if (Math.abs(brush.x-brush.x0) < 2 && Math.abs(brush.y-brush.y0) < 2) {
-		canvas.draw([brush.x+2, brush.y+2]);
-	}
 	canvas.strokeEnd();
 }
 function move(e){
-	brush.x=e.pageX;
-	brush.y=e.pageY;
+	brush.p[0] = e.pageX;
+	brush.p[1] = e.pageY;
+	brush.d[0] += e.movementX;
+	brush.d[1] += e.movementY;
 }
 
-function currMode(){
-	return modeStack[modeStack.length-1];
-}
 function modeSwitch(e){
-	modeStack = [e.target.id];
-	console.log(currMode());
+	currMode = e.target.id;
 }
 function changeMode(newMode){
+    currMode = newMode;
 	document.getElementById(newMode).checked = true;
-	console.log(currMode());
-}
-function changeStyle(newstyle){
-	for (var i in newstyle){
-		canvas.setStyle(i, newstyle[i]);
-		document.getElementById(i).value = newstyle[i];
-	}
 }
 
 function keyDown(e){
@@ -111,23 +85,13 @@ function keyDown(e){
 	prevKey = e.key;
 	if (e.key in keymap){
 		var newMode = keymap[e.key];
-		if (newMode == currMode()){return;}
-		modeStack.push(newMode);
+		if (newMode == currMode) {return;}
 		changeMode(newMode);
-	} else if (parseInt(e.key) < styles.length){
-		changeStyle(styles[parseInt(e.key)]);
 	}
 }
 function keyUp(e){
 	prevKey = "";
-	if (modeStack.length == 1){return;}
-	var i = modeStack.indexOf(keymap[e.key]);
-	if (i == modeStack.length-1) {
-		modeStack.pop();
-		changeMode(currMode());
-	} else {
-		modeStack.splice(i, 1);
-	}
+    changeMode("draw");
 }
 
 function init(){
@@ -141,12 +105,12 @@ function init(){
 		modeSwitches[i].addEventListener("change", modeSwitch);
 	}
 	window.addEventListener("resize", ()=>(canvas.resize()));
-	document.body.addEventListener("pointerdown", down);
-	document.body.addEventListener("pointerup", up);
-	document.body.addEventListener("pointercancel", up);
-	document.body.addEventListener("pointerout", up);
-	document.body.addEventListener("pointerleave", up);
-	document.body.addEventListener("pointermove", move);
+	canvas.domElement.addEventListener("pointerdown", down);
+	canvas.domElement.addEventListener("pointerup", up);
+	canvas.domElement.addEventListener("pointercancel", up);
+	canvas.domElement.addEventListener("pointerout", up);
+	canvas.domElement.addEventListener("pointerleave", up);
+	canvas.domElement.addEventListener("pointermove", move);
 	document.body.addEventListener("keydown", keyDown);
 	document.body.addEventListener("keyup", keyUp);
 	document.getElementById("lineWidth").addEventListener("change", function(e){
@@ -161,5 +125,4 @@ function init(){
 	main();
 }
 
-document.addEventListener("DOMContentLoaded", function(event) {init()});
-// window.onerror = function(e){alert(e);}
+document.addEventListener("DOMContentLoaded", init);

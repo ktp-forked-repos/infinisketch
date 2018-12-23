@@ -93,7 +93,8 @@ class GlSketch {
             console.log("points", this.numPoints);
         }
         this.addLine(coord);
-        this.prev = coord;
+        this.prev[0] = coord[0];
+        this.prev[1] = coord[1];
     }
     erase(coord) {
         this.addLine(coord, {
@@ -104,14 +105,15 @@ class GlSketch {
     }
     pan(delta) {
         var scale = 1/window.innerHeight*2/this.uniforms.u_scale;
-        this.uniforms.u_offset[0] -= delta[0] * scale;
-        this.uniforms.u_offset[1] += delta[1] * scale;
+        this.uniforms.u_offset[0] += delta[0] * scale;
+        this.uniforms.u_offset[1] -= delta[1] * scale;
     }
     zoom(delta) {
         this.uniforms.u_scale *= delta;
     }
     move(coord) {
-        this.prev = coord;
+        this.prev[0] = coord[0];
+        this.prev[1] = coord[1];
         this.addPoint(coord);
         this.addPoint(coord);
     }
