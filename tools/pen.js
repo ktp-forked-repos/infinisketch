@@ -4,7 +4,7 @@ const createPen = () => {
     let id = 0;
     let curr;
     return {
-        down: function(inputs, sketch) {
+        down: ({inputs, sketch, ...rest}) => {
             id ++;
             curr = {
                 type: "line",
@@ -15,11 +15,11 @@ const createPen = () => {
             };
             sketch.create("line" + id, curr);
         },
-        move: function(inputs, sketch) {
+        move: ({inputs, sketch, ...rest}) => {
             curr.points.push([inputs.p[0], inputs.p[1]]);
             sketch.update("line" + id, ["points"]);
         },
-        up: function(inputs, sketch) {
+        up: ({inputs, sketch, ...rest}) => {
             if (inputs.p[0] !== inputs.p0[0] && inputs.p[1] !== inputs.p0[1]) {
                 return;
             }

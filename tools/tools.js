@@ -1,5 +1,7 @@
 "use strict";
 
 let tools = {
-    pen: createPen()
+    pen: createPen(),
+    move: createMove(),
+    zoom: createZoom(),
 }

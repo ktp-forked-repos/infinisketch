@@ -33,7 +33,9 @@ function main(){
 			&& Math.abs(brush.d[1]) < 1){
 		return;
 	}
-	tools[currTool].move(brush, sketch);
+	if (currTool in tools && "move" in tools[currTool]) {
+    	tools[currTool].move({inputs: brush, sketch: sketch, view: canvas});
+	}
 	brush.d[0] = 0;
 	brush.d[1] = 0;
 	canvas.render();
@@ -45,11 +47,15 @@ function down(e){
 	brush.p[0] = brush.p0[0] = e.pageX;
 	brush.p[1] = brush.p0[1] = e.pageY;
 	brush.d[0] = brush.d[1] = 0;
-	tools[currTool].down(brush, sketch);
+	if (currTool in tools && "down" in tools[currTool]) {
+	    tools[currTool].down({inputs: brush, sketch: sketch, view: canvas});
+	}
 }
 function up(e){
 	brush.down=false;
-	tools[currTool].up(brush, sketch);
+	if (currTool in tools && "up" in tools[currTool]) {
+	   tools[currTool].up({inputs: brush, sketch: sketch, view: canvas});
+	}
 }
 function move(e){
 	brush.p[0] = e.pageX;
