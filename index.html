@@ -47,10 +47,10 @@ canvas{
 <body>
 
 <div class="controls">
-	<input class="mode" type="radio" name="mode" id="draw" value="draw" checked />
-		<label for="draw">Draw</label>
-	<input class="mode" type="radio" name="mode" id="erase" value="erase" />
-		<label for="erase">Erase</label>
+	<input class="mode" type="radio" name="mode" id="pen" value="pen" checked />
+		<label for="pen">Pen</label>
+	<input class="mode" type="radio" name="mode" id="eraser" value="eraser" />
+		<label for="eraser">Eraser</label>
 	<input class="mode" type="radio" name="mode" id="move" value="move" />
 		<label for="move">Move</label>
 	<input class="mode" type="radio" name="mode" id="zoom" value="zoom" />
@@ -61,9 +61,12 @@ canvas{
 	<img src="palette.png" id="palette" />
 </div>
 
-<script src="main.js" ></script>
-<script src="glsketch.js" ></script>
 <script src="http://twgljs.org/dist/4.x/twgl.js" ></script>
+<script src="tools/pen.js" ></script>
+<script src="tools/tools.js" ></script>
+<script src="sketch.js" ></script>
+<script src="glsketch.js" ></script>
+<script src="main.js" ></script>
 
 </body>
 

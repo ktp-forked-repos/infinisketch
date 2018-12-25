@@ -4,16 +4,19 @@ let brush = {
 	p: [0, 0], // position
 	d: [0, 0], // delta
 	p0: [0, 0],// start position
-	"down":false
+	"down":false,
+	weight: 2,
+	palette: [0, 0],
 }
 let keymap = {
-	"a":"draw",
-	"s":"erase",
+	"a":"pen",
+	"s":"eraser",
 	"d":"move",
 	"f":"zoom"
 }
 let prevKey = "";
-let currMode = "draw";
+let currTool = "pen";
+let sketch = createSketch();
 
 
 function opt(a, b) {
@@ -30,24 +33,7 @@ function main(){
 			&& Math.abs(brush.d[1]) < 1){
 		return;
 	}
-	switch (currMode) {
-		case "draw":
-			canvas.draw(brush.p);
-			break;
-		case "erase":
-			canvas.erase(brush.p);
-			break;
-		case "move":
-			canvas.pan(brush.d);
-			break;
-		case "zoom":
-			var fac = 1- Math.abs(brush.d[1])/100;
-			if (brush.d[1] > 0){
-				canvas.zoom(fac);
-			} else {
-				canvas.zoom(1/fac);
-			}
-	}
+	tools[currTool].move(brush, sketch);
 	brush.d[0] = 0;
 	brush.d[1] = 0;
 	canvas.render();
@@ -59,11 +45,11 @@ function down(e){
 	brush.p[0] = brush.p0[0] = e.pageX;
 	brush.p[1] = brush.p0[1] = e.pageY;
 	brush.d[0] = brush.d[1] = 0;
-	canvas.move(brush.p);
+	tools[currTool].down(brush, sketch);
 }
 function up(e){
 	brush.down=false;
-	canvas.strokeEnd();
+	tools[currTool].up(brush, sketch);
 }
 function move(e){
 	brush.p[0] = e.pageX;
@@ -72,37 +58,37 @@ function move(e){
 	brush.d[1] += e.movementY;
 }
 
-function modeSwitch(e){
-	currMode = e.target.id;
+function toolSwitch(e){
+	currTool = e.target.id;
 }
-function changeMode(newMode){
-    currMode = newMode;
-	document.getElementById(newMode).checked = true;
+function changeTool(newTool){
+    currTool = newTool;
+	document.getElementById(newTool).checked = true;
 }
 
 function keyDown(e){
 	if (e.key == prevKey){return;}
 	prevKey = e.key;
 	if (e.key in keymap){
-		var newMode = keymap[e.key];
-		if (newMode == currMode) {return;}
-		changeMode(newMode);
+		var newTool = keymap[e.key];
+		if (newTool == currTool) {return;}
+		changeTool(newTool);
 	}
 }
 function keyUp(e){
 	prevKey = "";
-    changeMode("draw");
+    changeTool("pen");
 }
 
 function init(){
 	console.log("init");
 	var palette = document.getElementById("palette")
-	window.canvas = new GlSketch(palette);
+	window.canvas = new GlSketch(palette, sketch);
 	document.body.appendChild(canvas.domElement);
 	canvas.resize();
-	var modeSwitches = document.getElementsByClassName("mode");
-	for (var i = 0; i < modeSwitches.length; i ++){
-		modeSwitches[i].addEventListener("change", modeSwitch);
+	var toolSwitches = document.getElementsByClassName("mode");
+	for (var i = 0; i < toolSwitches.length; i ++){
+		toolSwitches[i].addEventListener("change", toolSwitch);
 	}
 	window.addEventListener("resize", ()=>(canvas.resize()));
 	canvas.domElement.addEventListener("pointerdown", down);
@@ -114,13 +100,13 @@ function init(){
 	document.body.addEventListener("keydown", keyDown);
 	document.body.addEventListener("keyup", keyUp);
 	document.getElementById("lineWidth").addEventListener("change", function(e){
-		canvas.setStyle("lineWidth", parseInt(e.target.value));
+		brush.weight = parseInt(e.target.value);
 	});
 	document.getElementById("paletteX").addEventListener("change", function(e){
-		canvas.setStyle("paletteX", e.target.value/256);
+		brush.palette[0] = e.target.value/256;
 	});
 	document.getElementById("paletteY").addEventListener("change", function(e){
-		canvas.setStyle("paletteY", e.target.value/256);
+		brush.palette[1] = e.target.value/256;
 	});
 	main();
 }

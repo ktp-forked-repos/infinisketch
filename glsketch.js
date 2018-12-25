@@ -3,16 +3,11 @@
 const BUFF_SIZE = 65536;
 
 class GlSketch {
-    constructor(palette) {
+    constructor(palette, sketch) {
+        sketch.onCreate.push(this.update);
+
         var cvs = document.createElement("canvas");
         this.domElement = cvs;
-        this.numPoints = 0;
-        this.prev = [0,0];
-        this.style = {
-            "lineWidth": 2,
-            "paletteX": 0,
-            "paletteY": 0,
-        };
 
         this.gl = cvs.getContext("webgl2");
 
@@ -22,11 +17,11 @@ class GlSketch {
         this.arrays = {
             a_pos: {
                 numComponents: 2,
-                data: new Float32Array(BUFF_SIZE),
+                data: [],
             },
             a_paletteCoord: {
                 numComponents: 2,
-                data: new Float32Array(BUFF_SIZE),
+                data: [],
             }
         };
         this.bufferInfo = twgl.createBufferInfoFromArrays(this.gl, this.arrays);
@@ -58,6 +53,9 @@ class GlSketch {
         twgl.setUniforms(this.programInfo, this.uniforms);
         twgl.drawBufferInfo(this.gl, this.bufferInfo, this.gl.TRIANGLE_STRIP, this.numPoints)
     }
+    update(name, obj) {
+        console.log(name, obj);
+    }
     addPoint(coord, style) {
         style = style || this.style;
         var x = 2. * (coord[0] - window.innerWidth/2)/window.innerHeight;
@@ -81,11 +79,6 @@ class GlSketch {
         norm[0] /= dist; norm[1] /= dist;
         this.addPoint([coord[0]-norm[0], coord[1]-norm[1]], style);
         this.addPoint([coord[0]+norm[0], coord[1]+norm[1]], style);
-    }
-    setStyle(prop, val) {
-        if (prop in this.style) {
-            this.style[prop] = val;
-        }
     }
 
     draw(coord) {
