@@ -5,6 +5,7 @@ const createPen = () => {
     let curr;
     return {
         down: function(inputs, sketch) {
+            id ++;
             curr = {
                 type: "line",
                 points: [inputs.p],
@@ -13,17 +14,17 @@ const createPen = () => {
                 update: true
             };
             sketch.create("line" + id, curr);
-            id ++;
         },
         move: function(inputs, sketch) {
             curr.points.push([inputs.p[0], inputs.p[1]]);
-            curr.update = true;
+            sketch.update("line" + id, ["points"]);
         },
         up: function(inputs, sketch) {
             if (inputs.p[0] !== inputs.p0[0] && inputs.p[1] !== inputs.p0[1]) {
                 return;
             }
             curr.points.push([inputs.p[0] + 2, inputs.p[1] + 2]);
+            sketch.update("line" + id, ["points"]);
         }
     }
 }

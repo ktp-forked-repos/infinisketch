@@ -4,7 +4,10 @@ const BUFF_SIZE = 65536;
 
 class GlSketch {
     constructor(palette, sketch) {
+        this.sketch = sketch;
         sketch.onCreate.push(this.update);
+        // Closure dance to make this keyword work
+        sketch.onUpdate.push(( (that) => ((name, props)=> (that.draw(name, props))) )(this));
 
         var cvs = document.createElement("canvas");
         this.domElement = cvs;
@@ -17,13 +20,14 @@ class GlSketch {
         this.arrays = {
             a_pos: {
                 numComponents: 2,
-                data: [],
+                data: new Float32Array(BUFF_SIZE),
             },
             a_paletteCoord: {
                 numComponents: 2,
-                data: [],
+                data: new Float32Array(BUFF_SIZE),
             }
         };
+        this.numPoints = 0;
         this.bufferInfo = twgl.createBufferInfoFromArrays(this.gl, this.arrays);
         this.palette = twgl.createTexture(this.gl, {
             "src": palette,
@@ -69,11 +73,11 @@ class GlSketch {
         this.arrays["a_paletteCoord"].data[this.numPoints*2+1] = style.paletteY;
         this.numPoints ++;
     }
-    addLine(coord, style) {
+    addLine(prev, coord, style) {
         style = style || this.style;
         var norm = [
-            -coord[1]+this.prev[1],
-            coord[0]-this.prev[0]
+            -coord[1]+prev[1],
+            coord[0]-prev[0]
         ];
         var dist = Math.sqrt(Math.pow(norm[0],2)+ Math.pow(norm[1],2))/style.lineWidth;
         norm[0] /= dist; norm[1] /= dist;
@@ -81,13 +85,14 @@ class GlSketch {
         this.addPoint([coord[0]+norm[0], coord[1]+norm[1]], style);
     }
 
-    draw(coord) {
+    draw(name, prop) {
+        let line = this.sketch.data[name];
+        let coord = line.points[line.points.length-1];
+        let prev = line.points[line.points.length-2];
         if (this.numPoints % 1000 == 0) {
             console.log("points", this.numPoints);
         }
-        this.addLine(coord);
-        this.prev[0] = coord[0];
-        this.prev[1] = coord[1];
+        this.addLine(prev, coord, {lineWidth: line.width});
     }
     erase(coord) {
         this.addLine(coord, {
