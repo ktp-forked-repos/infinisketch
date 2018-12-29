@@ -12,7 +12,7 @@ const createSketch = () => ({
     onUpdate: [],
     update(name, props) {
         for (let i in this.onUpdate) {
-            this.onUpdate[i](name, props);
+            this.onUpdate[i](this, name, props);
         }
     }
 })

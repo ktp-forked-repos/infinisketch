@@ -89,7 +89,7 @@ function keyUp(e){
 function init(){
 	console.log("init");
 	var palette = document.getElementById("palette")
-	window.canvas = new GlSketch(palette, sketch);
+	window.canvas = createGlview(palette, sketch);
 	document.body.appendChild(canvas.domElement);
 	canvas.resize();
 	var toolSwitches = document.getElementsByClassName("mode");
