@@ -8,7 +8,7 @@ const createPen = () => {
             id ++;
             curr = {
                 type: "line",
-                points: [inputs.p],
+                points: [inputs.p.slice()],
                 width: inputs.weight,
                 palette: inputs.palette,
                 update: true
@@ -16,7 +16,7 @@ const createPen = () => {
             sketch.create("line" + id, curr);
         },
         move: ({inputs, sketch, ...rest}) => {
-            curr.points.push([inputs.p[0], inputs.p[1]]);
+            curr.points.push(inputs.p.slice());
             sketch.update("line" + id, ["points"]);
         },
         up: ({inputs, sketch, ...rest}) => {

@@ -45,15 +45,15 @@ const createGlview = (paletteimg, sketch) => {
     }
     `;
 
-    sketch.onCreate.push(update);
+    sketch.onCreate.push(create);
     sketch.onUpdate.push(draw);
+    sketch.onRemove.push(remove);
 
     let cvs = document.createElement("canvas");
     let gl = cvs.getContext("webgl2");
     let programInfo = twgl.createProgramInfo(gl, [vs, fs], ["a_pos", "a_paletteCoord"]);
     gl.useProgram(programInfo.program);
 
-    let numPoints = 0;
     let updateRanges = [];
 
     let attribLocs = {
@@ -64,6 +64,9 @@ const createGlview = (paletteimg, sketch) => {
     let strokesBuff = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, strokesBuff);
     gl.bufferData(gl.ARRAY_BUFFER, strokes, gl.DYNAMIC_DRAW);
+
+    let allocator = createAlloc({arr: strokes});
+    let allocs = {};
 
     let vao = gl.createVertexArray();
     gl.bindVertexArray(vao);
@@ -93,66 +96,100 @@ const createGlview = (paletteimg, sketch) => {
         uniforms.u_aspect = size[0]/size[1];
         gl.viewport(0,0, size[0], size[1]);
     }
-    function updatePoint(idx) {}
     function render() {
         gl.bindBuffer(gl.ARRAY_BUFFER, strokesBuff);
         while (updateRanges.length > 0) {
-            update = updateRanges.pop();
+            let update = updateRanges.pop();
             gl.bufferSubData(gl.ARRAY_BUFFER, 4*update[0], 
-                strokes, update[0], 4*update[1]);
+                strokes, update[0], update[1]);
         }
 //         gl.bufferData(gl.ARRAY_BUFFER, strokes, gl.DYNAMIC_DRAW);
         twgl.setUniforms(programInfo, uniforms);
-        gl.drawArrays(gl.TRIANGLE_STRIP, 0, numPoints);
-//         twgl.drawBufferInfo(gl, bufferInfo, gl.TRIANGLE_STRIP, numPoints)
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, BUFF_SIZE / 4);
     }
-    function update(name, obj) {
-        console.log(name, obj);
+    function create(sketch, name) {
+        let line = sketch.data[name];
+        if (line["type"] !== "line") {
+            return;
+        }
+        let idx = allocator.alloc(96)
+        allocs[name] = [idx, 96];
+        console.log(allocs);
+        addPoint(line.points[0], {}, idx);
+        addPoint(line.points[0], {}, idx+4);
     }
-    function addPoint(coord, style) {
+    function addUpdate(idx, size) {
+        let i;
+        for (i = 1; i < updateRanges.length; i ++) {
+            if (updateRanges[i] > idx+size) {
+                break;
+            }
+        }
+        if (updateRanges.length > 0 && 
+                updateRanges[i-1][0] + updateRanges[i-1][1] === idx) {
+            updateRanges[i-1][1] += size;
+        } else {
+            updateRanges.splice(i, 0, [idx, size]);
+        }
+    }
+    function addPoint(coord, style, idx) {
         var x = 2. * (coord[0] - window.innerWidth/2)/window.innerHeight;
         var y = 2. * (1. - (coord[1]/window.innerHeight)) - 1.;
         x /= uniforms.u_scale; y /= uniforms.u_scale;
         x -= uniforms.u_offset[0];
         y -= uniforms.u_offset[1];
-        strokes[numPoints*4] = x;
-        strokes[numPoints*4+1] = y;
-        strokes[numPoints*4+2] = style.paletteX;
-        strokes[numPoints*4+3] = style.paletteY;
-        let i;
-        for (i = 1; i < updateRanges.length; i ++) {
-            if (updateRanges[i] > numPoints * 4) {
-                break;
-            }
-        }
-        if (updateRanges.length > 0 && 
-                updateRanges[i-1][0] + updateRanges[i-1][1] === numPoints * 4) {
-            updateRanges[i-1][1] += 4;
-        } else {
-            updateRanges.splice(i, 0, [numPoints*4, 4]);
-        }
-        numPoints ++;
+        strokes[idx] = x;
+        strokes[idx+1] = y;
+        strokes[idx+2] = style.paletteX;
+        strokes[idx+3] = style.paletteY;
+        addUpdate(idx, 4);
     }
-    function addLine(prev, coord, style) {
-        style = style || style;
+    function addLine(prev, coord, style, idx) {
         var norm = [
             -coord[1]+prev[1],
             coord[0]-prev[0]
         ];
         var dist = Math.sqrt(Math.pow(norm[0],2)+ Math.pow(norm[1],2))/style.lineWidth;
         norm[0] /= dist; norm[1] /= dist;
-        addPoint([coord[0]-norm[0], coord[1]-norm[1]], style);
-        addPoint([coord[0]+norm[0], coord[1]+norm[1]], style);
+        addPoint([coord[0]-norm[0], coord[1]-norm[1]], style, idx);
+        addPoint([coord[0]+norm[0], coord[1]+norm[1]], style, idx+4);
+        addPoint(coord, style, idx+8);
+        addPoint(coord, style, idx+12);
     }
 
     function draw (sketch, name, prop) {
         let line = sketch.data[name];
+        if (line["type"] !== "line") {
+            return;
+        }
+        if (line["points"].length < 2) {
+            return;
+        }
         let coord = line.points[line.points.length-1];
         let prev = line.points[line.points.length-2];
-        if (numPoints % 1000 == 0) {
-            console.log("points", numPoints);
+        let block = allocs[name];
+        if (line.points.length * 8 > block[1] - 16) {
+            console.log("realloc");
+            let newalloc = allocator.realloc(allocs[name][0], Math.trunc(allocs[name][1] * 2));
+            if (newalloc < 0) {
+                console.log("Can not realloc");
+                return;
+            }
+            allocs[name][0] = newalloc;
+            allocs[name][1] *= 2;
         }
-        addLine(prev, coord, {lineWidth: line.width});
+        addLine(prev, coord, {lineWidth: line.width}, block[0] + line.points.length * 8 - 8);
+    }
+    function remove (sketch, name) {
+        let line = sketch.data[name];
+        if (line["type"] !== "line") {
+            return;
+        }
+        let alloc = allocs[name];
+        allocator.memset(alloc[0], 0, alloc[1]);
+        addUpdate(alloc[0], alloc[1]);
+        allocator.free(alloc[0]);
+        delete allocs[name];
     }
     function pan(delta) {
         var scale = 1/window.innerHeight*2/uniforms.u_scale;
@@ -170,5 +207,6 @@ const createGlview = (paletteimg, sketch) => {
         pan,
         zoom,
         render,
+        _strokes: strokes,
     }
 }
