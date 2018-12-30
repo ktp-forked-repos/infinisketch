@@ -98,6 +98,7 @@ const createGlview = (paletteimg, sketch) => {
         uniforms.u_vheight = size[1];
         uniforms.u_aspect = size[0]/size[1];
         gl.viewport(0,0, size[0], size[1]);
+        render();
     }
     function render() {
         gl.bindBuffer(gl.ARRAY_BUFFER, strokesBuff);

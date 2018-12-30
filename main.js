@@ -17,6 +17,7 @@ let keymap = {
 let prevKey = "";
 let currTool = "pen";
 let sketch = createSketch();
+tools["eraser"] = createEraser(sketch);
 
 
 function opt(a, b) {

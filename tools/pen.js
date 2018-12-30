@@ -28,3 +28,45 @@ const createPen = () => {
         }
     }
 }
+
+const createEraser = (sketch) => {
+    let bounds = {};
+    sketch.onCreate.push(create);
+    sketch.onUpdate.push(update);
+    sketch.onRemove.push(remove);
+    function create(sketch, name) {
+        if (sketch.data[name].type === "line") {
+            let p = sketch.data[name].points[0];
+            bounds[name] = [p[0], p[1], p[0], p[1]];
+        }
+    }
+    function update(sketch, name, props) {
+        let up = sketch.data[name]
+        if (up.type === "line" && props.indexOf("points") >= 0) {
+            let pnt = up.points[up.points.length - 1];
+            let bound = bounds[name];
+            bound[0] = Math.min(bound[0], pnt[0]);
+            bound[1] = Math.min(bound[1], pnt[1]);
+            bound[2] = Math.max(bound[2], pnt[0]);
+            bound[3] = Math.max(bound[3], pnt[1]);
+        }
+    }
+    function remove(sketch, name) {
+        if (sketch.data[name].type !== "line") {
+            return;
+        }
+        delete bounds[name];
+    }
+    return {
+        move: ({inputs, sketch, ...rest}) => {
+            let p = sketch.pix2sketch(inputs.p);
+            for (let i in bounds) {
+                let b = bounds[i];
+                if (!(b[0] < p[0] && p[0] < b[2] && b[1] < p[1] && p[1] < b[3])) {
+                    continue;
+                }
+                sketch.remove(i);
+            }
+        },
+    }
+}
