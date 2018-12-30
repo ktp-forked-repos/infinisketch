@@ -5,8 +5,9 @@ const BUFF_SIZE = 65536;
 const createGlview = (paletteimg, sketch) => {
     const vs = `#version 300 es
 
+    uniform float u_vheight;
     uniform float u_aspect;
-    uniform vec2 u_offset;
+    uniform vec2 u_center;
     uniform float u_scale;
 
     in vec2 a_pos;
@@ -16,9 +17,9 @@ const createGlview = (paletteimg, sketch) => {
 
     void main() {
         vec2 pos;
-        pos.x = (a_pos.x + u_offset.x) / u_aspect;
-        pos.y = (a_pos.y + u_offset.y);
-        pos *= u_scale;
+        pos.x = (a_pos.x - u_center.x) / u_aspect;
+        pos.y = (a_pos.y - u_center.y);
+        pos *= 2. * u_scale / u_vheight;
         gl_Position = vec4(pos, 0, 1);
         v_paletteCoord = a_paletteCoord;
         //v_paletteCoord = a_pos;
@@ -83,8 +84,9 @@ const createGlview = (paletteimg, sketch) => {
         "minmag": gl.NEAREST,
     });
     let uniforms = {
+        u_vheight: window.innerHieght,
         u_aspect: 1,
-        u_offset: new Float32Array([0,0]),
+        u_center: new Float32Array([0,0]),
         u_scale: 1,
         u_palette: palette,
     }
@@ -93,6 +95,7 @@ const createGlview = (paletteimg, sketch) => {
     function resize() {
         twgl.resizeCanvasToDisplaySize(gl.canvas, window.devicePixelRatio);
         size = [gl.canvas.width, gl.canvas.height];
+        uniforms.u_vheight = size[1];
         uniforms.u_aspect = size[0]/size[1];
         gl.viewport(0,0, size[0], size[1]);
     }
@@ -104,6 +107,9 @@ const createGlview = (paletteimg, sketch) => {
                 strokes, update[0], update[1]);
         }
 //         gl.bufferData(gl.ARRAY_BUFFER, strokes, gl.DYNAMIC_DRAW);
+        uniforms.u_center[0] = sketch.view.center[0];
+        uniforms.u_center[1] = sketch.view.center[1];
+        uniforms.u_scale = sketch.view.scale * window.devicePixelRatio;
         twgl.setUniforms(programInfo, uniforms);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, BUFF_SIZE / 4);
     }
@@ -133,13 +139,8 @@ const createGlview = (paletteimg, sketch) => {
         }
     }
     function addPoint(coord, style, idx) {
-        var x = 2. * (coord[0] - window.innerWidth/2)/window.innerHeight;
-        var y = 2. * (1. - (coord[1]/window.innerHeight)) - 1.;
-        x /= uniforms.u_scale; y /= uniforms.u_scale;
-        x -= uniforms.u_offset[0];
-        y -= uniforms.u_offset[1];
-        strokes[idx] = x;
-        strokes[idx+1] = y;
+        strokes[idx] = coord[0];
+        strokes[idx+1] = coord[1];
         strokes[idx+2] = style.paletteX;
         strokes[idx+3] = style.paletteY;
         addUpdate(idx, 4);
@@ -191,21 +192,11 @@ const createGlview = (paletteimg, sketch) => {
         allocator.free(alloc[0]);
         delete allocs[name];
     }
-    function pan(delta) {
-        var scale = 1/window.innerHeight*2/uniforms.u_scale;
-        uniforms.u_offset[0] += delta[0] * scale;
-        uniforms.u_offset[1] -= delta[1] * scale;
-    }
-    function zoom(delta) {
-        uniforms.u_scale *= delta;
-    }
 
     return {
         domElement: cvs,
         size,
         resize,
-        pan,
-        zoom,
         render,
         _strokes: strokes,
     }

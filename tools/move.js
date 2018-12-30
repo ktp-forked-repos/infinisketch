@@ -1,13 +1,14 @@
 "use strict";
 
 const createMove = () => ({
-    move: ({inputs, view, ...rest}) => {
-        view.pan(inputs.d);
+    move: ({inputs, sketch, ...rest}) => {
+        sketch.view.center[0] -= inputs.d[0] / sketch.view.scale;
+        sketch.view.center[1] += inputs.d[1] / sketch.view.scale;
     }
 });
 
 const createZoom = () => ({
-    move: ({inputs, view, ...rest}) => {
-        view.zoom(Math.exp(-inputs.d[1]/100));
+    move: ({inputs, sketch, ...rest}) => {
+        sketch.view.scale *= Math.exp(-inputs.d[1]/100);
     }
 })
