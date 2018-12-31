@@ -65,7 +65,15 @@ const createEraser = (sketch) => {
                 if (!(b[0] < p[0] && p[0] < b[2] && b[1] < p[1] && p[1] < b[3])) {
                     continue;
                 }
-                sketch.remove(i);
+                let stroke = sketch.data[i];
+                for (let j = 0; j < stroke.points.length; j ++) {
+                    let pnt = stroke.points[j];
+                    if (Math.abs(pnt[0] - p[0]) < inputs.weight * 20 
+                            && Math.abs(pnt[1] - p[1]) < inputs.weight * 20) {
+                        sketch.remove(i);
+                        break;
+                    }
+                }
             }
         },
     }
