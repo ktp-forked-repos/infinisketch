@@ -122,8 +122,8 @@ const createGlview = (paletteimg, sketch) => {
         let idx = allocator.alloc(96)
         allocs[name] = [idx, 96];
         console.log(allocs);
-        addPoint(line.points[0], {}, idx);
-        addPoint(line.points[0], {}, idx+4);
+        addPoint(line.points[0], line, idx);
+        addPoint(line.points[0], line, idx+4);
     }
     function addUpdate(idx, size) {
         let i;
@@ -142,8 +142,8 @@ const createGlview = (paletteimg, sketch) => {
     function addPoint(coord, style, idx) {
         strokes[idx] = coord[0];
         strokes[idx+1] = coord[1];
-        strokes[idx+2] = style.paletteX;
-        strokes[idx+3] = style.paletteY;
+        strokes[idx+2] = style.palette[0];
+        strokes[idx+3] = style.palette[1];
         addUpdate(idx, 4);
     }
     function addLine(prev, coord, style, idx) {
@@ -180,7 +180,7 @@ const createGlview = (paletteimg, sketch) => {
             allocs[name][0] = newalloc;
             allocs[name][1] *= 2;
         }
-        addLine(prev, coord, {lineWidth: line.width}, block[0] + line.points.length * 8 - 8);
+        addLine(prev, coord, {lineWidth: line.width, palette: line.palette}, block[0] + line.points.length * 8 - 8);
     }
     function remove (sketch, name) {
         let line = sketch.data[name];
