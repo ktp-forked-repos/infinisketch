@@ -1,3 +1,5 @@
+/* Render sketches using WebGL
+ */
 "use strict";
 
 const BUFF_SIZE = 65536;
@@ -50,32 +52,43 @@ const createGlview = (paletteimg, sketch) => {
     sketch.onUpdate.push(draw);
     sketch.onRemove.push(remove);
 
+    // Buffer for attributes
+    // Each point gets 4 values: [x, y, palettex, palettey]
+    let strokes = new Float32Array(BUFF_SIZE);
+    let allocator = createAlloc({arr: strokes});
+    // Object for tracking how much we've allocated for each stroke
+    // contains- id: [ptr, size]
+    let allocs = {};
+
+    // Ranges that must be re-uploaded to GPU
+    // in format [ptr, size]
+    let updateRanges = [];
+
+    // WebGL init
+    let size = [0, 0];
     let cvs = document.createElement("canvas");
     let gl = cvs.getContext("webgl2");
     let programInfo = twgl.createProgramInfo(gl, [vs, fs], ["a_pos", "a_paletteCoord"]);
     gl.useProgram(programInfo.program);
 
-    let updateRanges = [];
-
+    // Set up attributes
     let attribLocs = {
         a_pos: gl.getAttribLocation(programInfo.program, "a_pos"),
         a_paletteCoord: gl.getAttribLocation(programInfo.program, "a_paletteCoord"),
     }
-    let strokes = new Float32Array(BUFF_SIZE);
     let strokesBuff = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, strokesBuff);
     gl.bufferData(gl.ARRAY_BUFFER, strokes, gl.DYNAMIC_DRAW);
 
-    let allocator = createAlloc({arr: strokes});
-    let allocs = {};
-
     let vao = gl.createVertexArray();
     gl.bindVertexArray(vao);
+    // Floats are 4 bytes
     gl.enableVertexAttribArray(attribLocs["a_pos"]);
     gl.vertexAttribPointer(attribLocs["a_pos"], 2, gl.FLOAT, false, 4*4, 0);
     gl.enableVertexAttribArray(attribLocs["a_paletteCoord"]);
     gl.vertexAttribPointer(attribLocs["a_paletteCoord"], 2, gl.FLOAT, false, 4*4, 4*2);
 
+    // Set up uniforms
     let palette = twgl.createTexture(gl, {
         "src": paletteimg,
         "width": paletteimg.width,
@@ -90,8 +103,10 @@ const createGlview = (paletteimg, sketch) => {
         u_scale: 1,
         u_palette: palette,
     }
-    let size = [0, 0];
 
+
+    /* Respond to window resize
+     */
     function resize() {
         twgl.resizeCanvasToDisplaySize(gl.canvas, window.devicePixelRatio);
         size = [gl.canvas.width, gl.canvas.height];
@@ -100,7 +115,13 @@ const createGlview = (paletteimg, sketch) => {
         gl.viewport(0,0, size[0], size[1]);
         render();
     }
+
+    /* Redraw view.
+     * Uploads any ranges specified in updateRanges,
+     * Re-sets all uniforms, and draws.
+     */
     function render() {
+        // update ranges
         gl.bindBuffer(gl.ARRAY_BUFFER, strokesBuff);
         while (updateRanges.length > 0) {
             let update = updateRanges.pop();
@@ -108,57 +129,93 @@ const createGlview = (paletteimg, sketch) => {
                 strokes, update[0], update[1]);
         }
 //         gl.bufferData(gl.ARRAY_BUFFER, strokes, gl.DYNAMIC_DRAW);
+        // Update uniforms
         uniforms.u_center[0] = sketch.view.center[0];
         uniforms.u_center[1] = sketch.view.center[1];
         uniforms.u_scale = sketch.view.scale * window.devicePixelRatio;
         twgl.setUniforms(programInfo, uniforms);
+        // Draw
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, BUFF_SIZE / 4);
     }
+
+    /* Handle creation of stroke
+     * Allocates memory, and adds starting points.
+     * Assumes line already has one point in it.
+     */
     function create(sketch, name) {
         let line = sketch.data[name];
         if (line["type"] !== "line") {
             return;
         }
-        let idx = allocator.alloc(96)
-        allocs[name] = [idx, 96];
-        console.log(allocs);
-        addPoint(line.points[0], line, idx);
-        addPoint(line.points[0], line, idx+4);
+        let ptr = allocator.alloc(96)
+        allocs[name] = [ptr, 96];
+        // Since rendering triangle strip,
+        // need 2 points to connect previous stroke with
+        // degenerate triangle
+        addPoint(line.points[0], line, ptr);
+        addPoint(line.points[0], line, ptr+4);
     }
-    function addUpdate(idx, size) {
+
+    /* Records new range to update.
+     * Merges with existing range before if possible.
+     */
+    function addUpdate(ptr, size) {
+        // If new range, just insert
+        if (updateRanges.length === 0) {
+            updateRanges.push([ptr, size]);
+            return;
+        }
+        // Search for first range that's after the updated block
         let i;
         for (i = 1; i < updateRanges.length; i ++) {
-            if (updateRanges[i] > idx+size) {
+            if (updateRanges[i] > ptr+size) {
                 break;
             }
         }
-        if (updateRanges.length > 0 && 
-                updateRanges[i-1][0] + updateRanges[i-1][1] === idx) {
+        // See if previous block reaches ptr
+        if (updateRanges[i-1][0] + updateRanges[i-1][1] === ptr) {
             updateRanges[i-1][1] += size;
         } else {
-            updateRanges.splice(i, 0, [idx, size]);
+            updateRanges.splice(i, 0, [ptr, size]);
         }
     }
-    function addPoint(coord, style, idx) {
-        strokes[idx] = coord[0];
-        strokes[idx+1] = coord[1];
-        strokes[idx+2] = style.palette[0];
-        strokes[idx+3] = style.palette[1];
-        addUpdate(idx, 4);
+
+    /* Write new point to strokes array at ptr and, calls addUpdate
+     * style- should contain palette coordinates,
+     *      palette: [paletteX, paletteY]
+     */
+    function addPoint(coord, style, ptr) {
+        strokes[ptr] = coord[0];
+        strokes[ptr+1] = coord[1];
+        strokes[ptr+2] = style.palette[0];
+        strokes[ptr+3] = style.palette[1];
+        addUpdate(ptr, 4);
     }
+
+    /* Add 2 points to strokes array, starting at ptr,
+     * that would create a line from prev to cood.
+     * style- should contain width, palette
+     */
     function addLine(prev, coord, style, idx) {
+        // 2 points need to be "pushed apart" by width.
+        // Compute unit normal, and scale by width.
         var norm = [
             -coord[1]+prev[1],
             coord[0]-prev[0]
         ];
-        var dist = Math.sqrt(Math.pow(norm[0],2)+ Math.pow(norm[1],2))/style.lineWidth;
+        var dist = Math.sqrt(Math.pow(norm[0],2)+ Math.pow(norm[1],2))/style.width;
         norm[0] /= dist; norm[1] /= dist;
+
         addPoint([coord[0]-norm[0], coord[1]-norm[1]], style, idx);
         addPoint([coord[0]+norm[0], coord[1]+norm[1]], style, idx+4);
+        // Need to cap off with 2 points to form degenerate triangle
         addPoint(coord, style, idx+8);
         addPoint(coord, style, idx+12);
     }
 
+    /* Handle drawing
+     * Assumes one point has been added to line.
+     */
     function draw (sketch, name, prop) {
         let line = sketch.data[name];
         if (line["type"] !== "line") {
@@ -169,28 +226,37 @@ const createGlview = (paletteimg, sketch) => {
         }
         let coord = line.points[line.points.length-1];
         let prev = line.points[line.points.length-2];
+        // Check if enough space allocated
         let block = allocs[name];
-        if (line.points.length * 8 > block[1] - 16) {
+        // Need extra space for 4 points 
+        // (starting and ending degenerate triangles)
+        if (line.points.length * 8 + 4*4> block[1]) {
             console.log("realloc");
-            let newalloc = allocator.realloc(allocs[name][0], Math.trunc(allocs[name][1] * 2));
+            addUpdate(block[0], block[1]);
+            // Double size of allocation
+            let newalloc = allocator.realloc(block[0], block[1] * 2);
             if (newalloc < 0) {
                 console.log("Can not realloc");
                 return;
             }
-            allocs[name][0] = newalloc;
-            allocs[name][1] *= 2;
+            block[0] = newalloc;
+            block[1] *= 2;
+            addUpdate(block[0], block[1]);
         }
-        addLine(prev, coord, {lineWidth: line.width, palette: line.palette}, block[0] + line.points.length * 8 - 8);
+        addLine(prev, coord, line, block[0] + line.points.length * 8 - 8);
     }
+
+    /* Handle removal of line
+     * Frees associated block.
+     */
     function remove (sketch, name) {
         let line = sketch.data[name];
         if (line["type"] !== "line") {
             return;
         }
         let alloc = allocs[name];
-        allocator.memset(alloc[0], 0, alloc[1]);
-        addUpdate(alloc[0], alloc[1]);
         allocator.free(alloc[0]);
+        addUpdate(alloc[0], alloc[1]);
         delete allocs[name];
     }
 
