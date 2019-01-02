@@ -9,7 +9,7 @@ const createPen = () => {
             curr = {
                 type: "line",
                 points: [sketch.pix2sketch(inputs.p)],
-                width: inputs.weight,
+                width: inputs.weight / sketch.view.scale,
                 palette: inputs.palette,
                 update: true
             };
@@ -68,8 +68,9 @@ const createEraser = (sketch) => {
                 let stroke = sketch.data[i];
                 for (let j = 0; j < stroke.points.length; j ++) {
                     let pnt = stroke.points[j];
-                    if (Math.abs(pnt[0] - p[0]) < inputs.weight * 20 
-                            && Math.abs(pnt[1] - p[1]) < inputs.weight * 20) {
+                    let rad = inputs.weight * 20 / sketch.view.scale;
+                    if (Math.abs(pnt[0] - p[0]) < rad
+                            && Math.abs(pnt[1] - p[1]) < rad) {
                         sketch.remove(i);
                         break;
                     }

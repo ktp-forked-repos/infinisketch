@@ -5,7 +5,7 @@ let brush = {
 	d: [0, 0], // delta
 	p0: [0, 0],// start position
 	"down":false,
-	weight: 2,
+	weight: 1,
 	palette: [0, 0],
 }
 let keymap = {
@@ -53,6 +53,9 @@ function down(e){
 	}
 }
 function up(e){
+    if (!brush.down) {
+        return;
+    }
 	brush.down=false;
 	if (currTool in tools && "up" in tools[currTool]) {
 	   tools[currTool].up({inputs: brush, sketch: sketch, view: canvas});
@@ -65,10 +68,11 @@ function move(e){
 	brush.d[1] += e.movementY;
 }
 
-function toolSwitch(e){
-	currTool = e.target.id;
-}
 function changeTool(newTool){
+    if (newTool === currTool) {return;}
+    if (brush.down) {
+        up();
+    }
     currTool = newTool;
 	document.getElementById(newTool).checked = true;
 }
@@ -77,9 +81,11 @@ function keyDown(e){
 	if (e.key == prevKey){return;}
 	prevKey = e.key;
 	if (e.key in keymap){
-		var newTool = keymap[e.key];
-		if (newTool == currTool) {return;}
-		changeTool(newTool);
+		changeTool(keymap[e.key]);
+	} else if (!isNaN(parseInt(e.key))) {
+	    let val = parseInt(e.key) - 0.5;
+	    brush.palette[0] = val / 8;
+	    document.getElementById("paletteX").value = val * 32;
 	}
 }
 function keyUp(e){
@@ -95,7 +101,9 @@ function init(){
 	canvas.resize();
 	var toolSwitches = document.getElementsByClassName("mode");
 	for (var i = 0; i < toolSwitches.length; i ++){
-		toolSwitches[i].addEventListener("change", toolSwitch);
+		toolSwitches[i].addEventListener("change", (e) => {
+		    changeTool(e.target.id);
+		});
 	}
 	window.addEventListener("resize", ()=>(canvas.resize()));
 	canvas.domElement.addEventListener("pointerdown", down);
@@ -107,7 +115,7 @@ function init(){
 	document.body.addEventListener("keydown", keyDown);
 	document.body.addEventListener("keyup", keyUp);
 	document.getElementById("lineWidth").addEventListener("change", function(e){
-		brush.weight = parseInt(e.target.value);
+		brush.weight = Math.exp(parseFloat(e.target.value));
 	});
 	document.getElementById("paletteX").addEventListener("change", function(e){
 		brush.palette[0] = e.target.value/256;

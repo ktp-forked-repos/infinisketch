@@ -34,6 +34,7 @@ const createGlview = (paletteimg, sketch) => {
     in vec2 v_paletteCoord;
 
     uniform sampler2D u_palette;
+    uniform vec2 u_paletteOffset;
 
     out vec4 o_color;
 
@@ -43,7 +44,7 @@ const createGlview = (paletteimg, sketch) => {
         if (v_paletteCoord.x < 0. || v_paletteCoord.y < 0.) {
             o_color = vec4(0, 0, 0, 0);
         } else {
-            o_color = texture(u_palette, v_paletteCoord);
+            o_color = texture(u_palette, v_paletteCoord + u_paletteOffset);
         }
     }
     `;
@@ -93,8 +94,8 @@ const createGlview = (paletteimg, sketch) => {
         "src": paletteimg,
         "width": paletteimg.width,
         "height": paletteimg.height,
-        "wrap": gl.CLAMP_TO_EDGE,
-        "minmag": gl.NEAREST,
+        "wrap": gl.REPEAT,
+        "minMag": gl.NEAREST,
     });
     let uniforms = {
         u_vheight: window.innerHieght,
@@ -102,6 +103,7 @@ const createGlview = (paletteimg, sketch) => {
         u_center: new Float32Array([0,0]),
         u_scale: 1,
         u_palette: palette,
+        u_paletteOffset: [0, 0],
     }
 
 
@@ -122,6 +124,19 @@ const createGlview = (paletteimg, sketch) => {
      */
     function render() {
         // update ranges
+        // Merge ranges if possible
+        for (let i = 1; i < updateRanges.length; i ++) {
+            let prev = updateRanges[i-1];
+            let curr = updateRanges[i];
+            // If end of previous range does not reach start of current
+            if (prev[0] + prev[1] < curr[0]) {
+                continue;
+            }
+            prev[1] = Math.max(0, (curr[0] - prev[0]) + curr[1]);
+            updateRanges.splice(i, 1);
+            i --;
+        }
+        // Upload merged ranges
         gl.bindBuffer(gl.ARRAY_BUFFER, strokesBuff);
         while (updateRanges.length > 0) {
             let update = updateRanges.pop();
@@ -133,6 +148,8 @@ const createGlview = (paletteimg, sketch) => {
         uniforms.u_center[0] = sketch.view.center[0];
         uniforms.u_center[1] = sketch.view.center[1];
         uniforms.u_scale = sketch.view.scale * window.devicePixelRatio;
+        uniforms.u_paletteOffset[0] = sketch.paletteOffset[0];
+        uniforms.u_paletteOffset[1] = sketch.paletteOffset[1];
         twgl.setUniforms(programInfo, uniforms);
         // Draw
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, BUFF_SIZE / 4);
@@ -157,27 +174,17 @@ const createGlview = (paletteimg, sketch) => {
     }
 
     /* Records new range to update.
-     * Merges with existing range before if possible.
+     * Inserts into updateRanges, keeping it sorted by ptr.
      */
     function addUpdate(ptr, size) {
-        // If new range, just insert
-        if (updateRanges.length === 0) {
-            updateRanges.push([ptr, size]);
-            return;
-        }
         // Search for first range that's after the updated block
         let i;
-        for (i = 1; i < updateRanges.length; i ++) {
-            if (updateRanges[i] > ptr+size) {
+        for (i = 0; i < updateRanges.length; i ++) {
+            if (updateRanges[i][0] > ptr) {
                 break;
             }
         }
-        // See if previous block reaches ptr
-        if (updateRanges[i-1][0] + updateRanges[i-1][1] === ptr) {
-            updateRanges[i-1][1] += size;
-        } else {
-            updateRanges.splice(i, 0, [ptr, size]);
-        }
+        updateRanges.splice(i, 0, [ptr, size]);
     }
 
     /* Write new point to strokes array at ptr and, calls addUpdate

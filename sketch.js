@@ -6,6 +6,7 @@ const createSketch = () => ({
         center: [0, 0],
         scale: 1,
     },
+    paletteOffset: [0, 0],
     pix2sketch: function pix2sketch(pix) {
         return [
             (pix[0] - window.innerWidth/2) / this.view.scale + this.view.center[0],
