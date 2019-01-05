@@ -70,6 +70,7 @@ function move(e){
 
 function changeTool(newTool){
     if (newTool === currTool) {return;}
+    console.log("change", newTool);
     if (brush.down) {
         up();
     }
@@ -90,7 +91,9 @@ function keyDown(e){
 }
 function keyUp(e){
 	prevKey = "";
-    changeTool("pen");
+	if (e.key in keymap){
+        changeTool("pen");
+	}
 }
 
 function init(){
@@ -103,6 +106,15 @@ function init(){
 	for (var i = 0; i < toolSwitches.length; i ++){
 		toolSwitches[i].addEventListener("change", (e) => {
 		    changeTool(e.target.id);
+		});
+		toolSwitches[i].nextElementSibling.addEventListener("touchstart", (e) => {
+		    e.preventDefault();
+		    console.log(e);
+		    changeTool(e.target.getAttribute("for"));
+		});
+		toolSwitches[i].nextElementSibling.addEventListener("touchend", (e) => {
+		    e.preventDefault();
+		    changeTool("pen");
 		});
 	}
 	window.addEventListener("resize", ()=>(canvas.resize()));
