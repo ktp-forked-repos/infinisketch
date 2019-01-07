@@ -20,10 +20,11 @@ const createPen = () => {
             sketch.update("line" + id, ["points"]);
         },
         up: ({inputs, sketch, ...rest}) => {
-            if (inputs.p[0] !== inputs.p0[0] && inputs.p[1] !== inputs.p0[1]) {
+            if (!(Math.abs(inputs.p[0] - inputs.p0[0] < 2)
+                    && Math.abs(inputs.p[1] - inputs.p0[1] < 2))) {
                 return;
             }
-            curr.points.push(sketch.pix2sketch([inputs.p[0] + 2, inputs.p[1] + 2]));
+            curr.points.push(sketch.pix2sketch([inputs.p[0] + 5, inputs.p[1] + 5]));
             sketch.update("line" + id, ["points"]);
         }
     }
@@ -60,15 +61,16 @@ const createEraser = (sketch) => {
     return {
         move: ({inputs, sketch, ...rest}) => {
             let p = sketch.pix2sketch(inputs.p);
+            let rad = inputs.weight * 20 / sketch.view.scale;
             for (let i in bounds) {
                 let b = bounds[i];
-                if (!(b[0] < p[0] && p[0] < b[2] && b[1] < p[1] && p[1] < b[3])) {
+                if (!(b[0] < p[0] + rad && p[0] - rad < b[2] 
+                        && b[1] < p[1] + rad && p[1] - rad < b[3])) {
                     continue;
                 }
                 let stroke = sketch.data[i];
                 for (let j = 0; j < stroke.points.length; j ++) {
                     let pnt = stroke.points[j];
-                    let rad = inputs.weight * 20 / sketch.view.scale;
                     if (Math.abs(pnt[0] - p[0]) < rad
                             && Math.abs(pnt[1] - p[1]) < rad) {
                         sketch.remove(i);
