@@ -2,8 +2,6 @@
  */
 "use strict";
 
-const BUFF_SIZE = 65536;
-
 const createGlview = (paletteimg, sketch) => {
     const vs = `#version 300 es
 
@@ -52,10 +50,11 @@ const createGlview = (paletteimg, sketch) => {
     sketch.onCreate.push(create);
     sketch.onUpdate.push(draw);
     sketch.onRemove.push(remove);
+    sketch.on("up", checkFree);
 
     // Buffer for attributes
     // Each point gets 4 values: [x, y, palettex, palettey]
-    let strokes = new Float32Array(BUFF_SIZE);
+    let strokes = new Float32Array(1048576);
     let allocator = createAlloc({arr: strokes});
     // Object for tracking how much we've allocated for each stroke
     // contains- id: [ptr, size]
@@ -152,7 +151,7 @@ const createGlview = (paletteimg, sketch) => {
         uniforms.u_paletteOffset[1] = sketch.paletteOffset[1];
         twgl.setUniforms(programInfo, uniforms);
         // Draw
-        gl.drawArrays(gl.TRIANGLE_STRIP, 0, BUFF_SIZE / 4);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, strokes.length / 4);
     }
 
     /* Handle creation of stroke
@@ -265,6 +264,21 @@ const createGlview = (paletteimg, sketch) => {
         allocator.free(alloc[0]);
         addUpdate(alloc[0], alloc[1]);
         delete allocs[name];
+    }
+
+    function checkFree() {
+        console.log("free: ", allocator.stats.free);
+        if (allocator.stats.free > 96) {
+            return;
+        }
+        let newstrokes = allocator.resize(allocator.stats.size * 2);
+        if (!(ArrayBuffer.isView(newstrokes))) {
+            console.log("Could not expand strokes");
+            return;
+        }
+        strokes = newstrokes;
+        gl.bindBuffer(gl.ARRAY_BUFFER, strokesBuff);
+        gl.bufferData(gl.ARRAY_BUFFER, strokes, gl.DYNAMIC_DRAW);
     }
 
     return {

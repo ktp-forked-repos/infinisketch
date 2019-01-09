@@ -12,6 +12,11 @@ const createAlloc = ({arr, splitThresh = 32} = {}) => {
     // size- number of elements in block
     let useList = [];
     let freeList = [[0, arr.length]];
+    let stats = {
+        size: arr.length,
+        free: arr.length,
+        blocks: 0,
+    }
 
     /* Determine if there is a block starting at ptr in list
      * return- index in list if found, else -1
@@ -52,18 +57,46 @@ const createAlloc = ({arr, splitThresh = 32} = {}) => {
         }
     }
 
+    function resize(newsize) {
+        // Make sure we don't cut any blocks off
+        let lastused = useList[useList.length - 1];
+        if (newsize < lastused[0] + lastused[1]) {
+            return -1;
+        }
+        // Waiting for https://github.com/domenic/proposal-arraybuffer-transfer?
+        if (newsize < stats.size) {
+            arr = arr.slice(0, newsize);
+        } else if (newsize > stats.size) {
+            let newarr = new arr.constructor(newsize);
+            newarr.set(arr);
+            arr = newarr;
+        }
+        let diff = newsize - stats.size;
+        freeList.push([stats.size, diff]);
+        mergeFree();
+        stats.free += diff;
+        stats.size = arr.length;
+        console.log("resize to ", stats.size);
+        return arr;
+    }
+
     /* Allocates new block from array.
      * return- ptr to new block if success, else -1
      * note- simple first-fit alloc.
      */
     function alloc(size) {
         // Find suitable free block
+        if (freeList.length === 0) {
+            return -1;
+        }
         let i = 0;
-        while (freeList[i][1] < size) {
-            i ++;
-            if (i > freeList.length) {
-                return -1;
+        for (let i = 0; i < freeList.length; i ++) {
+            if (freeList[i][1] >= size) {
+                break;
             }
+        }
+        if (freeList[i][1] < size) {
+            return -1;
         }
         let block = freeList.splice(i, 1)[0];
         // See if can split
@@ -73,6 +106,8 @@ const createAlloc = ({arr, splitThresh = 32} = {}) => {
             insertBlock([block[0] + size, excess], freeList);
         }
         insertBlock(block, useList);
+        stats.free -= block[1];
+        console.log("allocating", block[0], "to", block[0] + block[1]);
         return block[0];
     }
 
@@ -88,6 +123,7 @@ const createAlloc = ({arr, splitThresh = 32} = {}) => {
         let block = useList.splice(blockid, 1)[0];
         memset(block[0], 0, block[1]);
         insertBlock(block, freeList);
+        stats.free += block[1];
         mergeFree();
         return 0;
     }
@@ -122,7 +158,9 @@ const createAlloc = ({arr, splitThresh = 32} = {}) => {
                 } else {
                     freeList.splice(nextId, 1);
                 }
+                stats.free += curr[1] - size;
                 curr[1] = size;
+                console.log("extending", curr[0], "to", curr[0] + curr[1]);
                 return ptr;
             }
         }
@@ -164,9 +202,11 @@ const createAlloc = ({arr, splitThresh = 32} = {}) => {
     }
 
     return {
+        resize,
         alloc,
         free,
         realloc,
         memset,
+        stats,
     }
 }

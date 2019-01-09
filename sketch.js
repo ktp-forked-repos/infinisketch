@@ -13,6 +13,21 @@ const createSketch = () => ({
             (window.innerHeight/2 - pix[1]) / this.view.scale + this.view.center[1]
         ];
     },
+    events: {},
+    on(event, func) {
+        if (!(event in this.events)) {
+            this.events[event] = [];
+        }
+        this.events[event].push(func);
+    },
+    trigger(event, ...args) {
+        if (!(event in this.events)) {
+            return;
+        }
+        for (let e in this.events[event]) {
+            this.events[event][e]();
+        }
+    },
     onCreate: [],
     create(name, obj) {
         this.data[name] = obj;

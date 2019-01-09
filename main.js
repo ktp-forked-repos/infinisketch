@@ -57,6 +57,7 @@ function up(e){
         return;
     }
 	brush.down=false;
+	sketch.trigger("up");
 	if (currTool in tools && "up" in tools[currTool]) {
 	   tools[currTool].up({inputs: brush, sketch: sketch, view: canvas});
 	}
