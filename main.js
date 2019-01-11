@@ -77,7 +77,7 @@ function changeTool(newTool){
     }
     currTool = newTool;
 	document.getElementById(newTool).checked = true;
-}
+}	
 
 function keyDown(e){
 	if (e.key == prevKey){return;}
@@ -95,6 +95,22 @@ function keyUp(e){
 	if (e.key in keymap){
         changeTool("pen");
 	}
+}
+
+function savesvg() {
+	// https://stackoverflow.com/questions/38477972/javascript-save-svg-element-to-file-on-disk?rq=1
+	let svgdoctype = document.implementation.createDocumentType('svg', "-//W3C//DTD SVG 1.1//EN", "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd");
+	let svgdoc = document.implementation.createDocument('http://www.w3.org/2000/svg', 'svg', svgdoctype);
+ 	svgdoc.replaceChild(exportsvg(sketch), svgdoc.documentElement);
+	let svgstr = (new XMLSerializer()).serializeToString(svgdoc);
+	let svgblob = new Blob([svgstr.replace(/></g, '>\n\r<')]);
+	let svgurl = URL.createObjectURL(svgblob);
+	window.open(svgurl);
+	let svglink = document.createElement("a");
+	svglink.href = svgurl;
+	svglink.download = "svg.svg";
+	svglink.click();
+	URL.revokeObjectURL(svgurl);
 }
 
 function init(){
@@ -136,6 +152,7 @@ function init(){
 	document.getElementById("paletteY").addEventListener("change", function(e){
 		brush.palette[1] = e.target.value/256;
 	});
+	document.getElementById("exportsvg").addEventListener("click", savesvg);
 	main();
 }
 
