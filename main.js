@@ -71,7 +71,6 @@ function move(e){
 
 function changeTool(newTool){
     if (newTool === currTool) {return;}
-    console.log("change", newTool);
     if (brush.down) {
         up();
     }

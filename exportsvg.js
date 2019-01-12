@@ -21,7 +21,7 @@ function exportsvg(sketch, palette) {
     let w = [window.innerWidth, window.innerHeight];
     let bounds = [
         c[0] - w[0] / 2 / s,
-        c[1] - w[1] / 2 / s,
+        -c[1] - w[1] / 2 / s,
         w[0] / s,
         w[1] / s
     ]

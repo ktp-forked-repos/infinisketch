@@ -237,7 +237,6 @@ const createGlview = (paletteimg, sketch) => {
         // Need extra space for 4 points 
         // (starting and ending degenerate triangles)
         if (line.points.length * 8 + 4*4> block[1]) {
-            console.log("realloc");
             addUpdate(block[0], block[1]);
             // Double size of allocation
             let newalloc = allocator.realloc(block[0], block[1] * 2);
@@ -267,8 +266,7 @@ const createGlview = (paletteimg, sketch) => {
     }
 
     function checkFree() {
-        console.log("free: ", allocator.stats.free);
-        if (allocator.stats.free > 96) {
+        if (allocator.stats.free > allocator.stats.size / 16) {
             return;
         }
         let newstrokes = allocator.resize(allocator.stats.size * 2);

@@ -76,7 +76,6 @@ const createAlloc = ({arr, splitThresh = 32} = {}) => {
         mergeFree();
         stats.free += diff;
         stats.size = arr.length;
-        console.log("resize to ", stats.size);
         return arr;
     }
 
@@ -107,7 +106,6 @@ const createAlloc = ({arr, splitThresh = 32} = {}) => {
         }
         insertBlock(block, useList);
         stats.free -= block[1];
-        console.log("allocating", block[0], "to", block[0] + block[1]);
         return block[0];
     }
 
@@ -160,7 +158,6 @@ const createAlloc = ({arr, splitThresh = 32} = {}) => {
                 }
                 stats.free += curr[1] - size;
                 curr[1] = size;
-                console.log("extending", curr[0], "to", curr[0] + curr[1]);
                 return ptr;
             }
         }
