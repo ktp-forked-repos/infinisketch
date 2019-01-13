@@ -88,8 +88,8 @@ const createAlloc = ({arr, splitThresh = 32} = {}) => {
         if (freeList.length === 0) {
             return -1;
         }
-        let i = 0;
-        for (let i = 0; i < freeList.length; i ++) {
+        let i;
+        for (i = 0; i < freeList.length; i ++) {
             if (freeList[i][1] >= size) {
                 break;
             }
@@ -135,34 +135,37 @@ const createAlloc = ({arr, splitThresh = 32} = {}) => {
             return -1;
         }
         let curr = useList[currId];
-        if (curr[1] > size) {
-            return curr[0];
+        let needed = size - curr[1];
+        // Same or smaller size. Reuse block.
+        if (needed <= 0) {
+            // See if can shrink block
+            if (needed <= -splitThresh) {
+                curr[1] = size;
+                insertBlock([curr[0]+curr[1], -needed], freeList);
+                stats.free -= needed;
+                mergeFree();
+            }
+            return ptr;
         }
 
-        // Fine, actually need to do something
         // See if we can just expand the block
         let nextId = findBlock(curr[0] + curr[1], freeList);
-        if (nextId >= 0) {
-            // Next bock is indeed free
+        if (nextId >= 0 && freeList[nextId][1] >= needed) {
+            // Next bock is indeed free, and 
+            // Large enough to do merge
             let next = freeList[nextId];
-            let mergeSize = next[1] + curr[1];
-            if (mergeSize > size) {
-                // Large enough to do merge
-                let excess = mergeSize - size;
-                if (excess > 0) {
-                    let diff = size - curr[1];
-                    next[0] += diff;
-                    next[1] -= diff;
-                } else {
-                    freeList.splice(nextId, 1);
-                }
-                stats.free += curr[1] - size;
-                curr[1] = size;
-                return ptr;
+            if (next[1] - needed >= splitThresh) {
+                next[0] += needed;
+                next[1] -= needed;
+            } else {
+                freeList.splice(nextId, 1);
             }
+            stats.free -= needed;
+            curr[1] = size;
+            return ptr;
         }
 
-        // Failing that, just alloc again, copy, and free old
+        // Failing that, alloc again, copy, and free old
         let newalloc = alloc(size);
         if (newalloc < 0) {
             return -1;
@@ -184,6 +187,13 @@ const createAlloc = ({arr, splitThresh = 32} = {}) => {
      * of length size
      */
     function memcpy(src, dest, size) {
+        // Use typedarray methods if possible
+        if (arr.buffer) {
+            let elemsize = arr.byteLength / arr.length;
+            let srcview = new arr.constructor(arr.buffer, elemsize * src, size);
+            arr.set(srcview, dest);
+            return;
+        }
         // If copying to higher ptr,
         // start copying from end of range
         if (src < dest) {
