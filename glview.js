@@ -47,10 +47,10 @@ const createGlview = (paletteimg, sketch) => {
     }
     `;
 
-    sketch.onCreate.push(create);
-    sketch.onUpdate.push(draw);
-    sketch.onRemove.push(remove);
-    sketch.on("up", checkFree);
+    sketch.on("lineStart", create);
+    sketch.on("lineAdd", draw);
+    sketch.on("lineEnd", checkFree);
+    sketch.on("lineRemove", remove);
 
     // Buffer for attributes
     // Each point gets 4 values: [x, y, palettex, palettey]
@@ -160,9 +160,6 @@ const createGlview = (paletteimg, sketch) => {
      */
     function create(sketch, name) {
         let line = sketch.data[name];
-        if (line["type"] !== "line") {
-            return;
-        }
         let ptr = allocator.alloc(96)
         allocs[name] = [ptr, 96];
         // Since rendering triangle strip,
@@ -224,9 +221,6 @@ const createGlview = (paletteimg, sketch) => {
      */
     function draw (sketch, name, prop) {
         let line = sketch.data[name];
-        if (line["type"] !== "line") {
-            return;
-        }
         if (line["points"].length < 2) {
             return;
         }
@@ -256,16 +250,20 @@ const createGlview = (paletteimg, sketch) => {
      */
     function remove (sketch, name) {
         let line = sketch.data[name];
-        if (line["type"] !== "line") {
-            return;
-        }
         let alloc = allocs[name];
         allocator.free(alloc[0]);
         addUpdate(alloc[0], alloc[1]);
         delete allocs[name];
     }
 
-    function checkFree() {
+    function checkFree(sketch, name) {
+        // Trim away unused space
+        let minsize = sketch.data[name].points.length * 8 + 4*4;
+        let shrunk = allocator.realloc(allocs[name][0], minsize);
+        if (!(shrunk < 0)) {
+            allocs[name][0] = shrunk;
+            allocs[name][1] = minsize;
+        }
         if (allocator.stats.free > allocator.stats.size / 16) {
             return;
         }
