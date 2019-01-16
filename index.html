@@ -34,16 +34,27 @@ canvas{
     height:100%;
 }
 
+#tools {
+	position: fixed;
+	z-index: 11;
+	left: 0;
+	top: 0;
+	width: 8rem;
+}
+#tools label {
+	width: 100%;
+	margin: .1em 0;
+    padding: 0.5rem;
+    background-color: #eee;
+    display: inline-block;
+}
+
 .controls{
 	position:fixed;
 	left: 0;
 	top: 0;
-	padding: 0.5rem;
+	padding: 0.5rem .5rem .5rem 10rem;
 	z-index:10;
-}
-label {
-    padding: 0.5rem;
-    background-color: #eee;
 }
 
 #paletteContainer {
@@ -81,15 +92,22 @@ label {
 
 <body>
 
+<div id="tools">
+    <label for="pen">
+        <input class="mode" type="radio" name="mode" id="pen" value="pen" checked />
+        Pen</label>
+	<label for="eraser">
+		<input class="mode" type="radio" name="mode" id="eraser" value="eraser" />
+		Eraser</label>
+	<label for="move">
+		<input class="mode" type="radio" name="mode" id="move" value="move" />
+		Move</label>
+	<label for="zoom">
+		<input class="mode" type="radio" name="mode" id="zoom" value="zoom" />
+		Zoom</label>
+</div>
+
 <div class="controls">
-	<input class="mode" type="radio" name="mode" id="pen" value="pen" checked />
-		<label for="pen">Pen</label>
-	<input class="mode" type="radio" name="mode" id="eraser" value="eraser" />
-		<label for="eraser">Eraser</label>
-	<input class="mode" type="radio" name="mode" id="move" value="move" />
-		<label for="move">Move</label>
-	<input class="mode" type="radio" name="mode" id="zoom" value="zoom" />
-		<label for="zoom">Zoom</label>
     <input type="range" id="lineWidth" min="-2" max="4" value="0" step="0.5" />
 	<div id="paletteContainer">
         <input type="range" id="paletteX" min="0" max="255" value="0" />

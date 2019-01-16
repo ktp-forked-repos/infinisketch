@@ -120,15 +120,19 @@ function init(){
 	canvas.resize();
 	var toolSwitches = document.getElementsByClassName("mode");
 	for (var i = 0; i < toolSwitches.length; i ++){
-		toolSwitches[i].addEventListener("change", (e) => {
+		toolSwitches[i].addEventListener("touchstart", (e) => {
+			e.stopPropagation();
 		    changeTool(e.target.id);
 		});
-		toolSwitches[i].nextElementSibling.addEventListener("touchstart", (e) => {
+		toolSwitches[i].addEventListener("touchend", (e) => {
+			e.stopPropagation();
+		});
+		toolSwitches[i].parentElement.addEventListener("touchstart", (e) => {
 		    e.preventDefault();
 		    console.log(e);
 		    changeTool(e.target.getAttribute("for"));
 		});
-		toolSwitches[i].nextElementSibling.addEventListener("touchend", (e) => {
+		toolSwitches[i].parentElement.addEventListener("touchend", (e) => {
 		    e.preventDefault();
 		    changeTool("pen");
 		});
