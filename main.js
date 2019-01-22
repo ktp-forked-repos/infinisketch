@@ -157,6 +157,17 @@ function init(){
 	});
 	document.getElementById("exportsvg").addEventListener("click", savesvg);
 	main();
+
+	if ('serviceWorker' in navigator) {
+		navigator.serviceWorker.register("worker.js")
+		.then(function(reg) {
+		// registration worked
+			console.log('Registration succeeded. Scope is ' + reg.scope);
+		}).catch(function(error) {
+			// registration failed
+			console.log('Registration failed with ' + error);
+		});
+	}
 }
 
 document.addEventListener("DOMContentLoaded", init);
