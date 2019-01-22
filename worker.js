@@ -7,8 +7,8 @@ self.addEventListener("install", (e) => {
     e.waitUntil(
         caches.open(CACHE).then((cache) => {
             return cache.addAll([
-                "/",
-                "/main.js"
+                "./",
+                "./main.js"
             ]);
         })
     );
@@ -23,7 +23,7 @@ self.addEventListener("fetch", (e) => {
  */
 function fromCache(request) {
     return caches.match(request).then((resp) => {
-        return resp || Promise.reject("Not in cache");
+        return resp || fetch(request);
     });
 }
 
